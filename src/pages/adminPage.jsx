@@ -7,7 +7,7 @@ export default function AdminPage() {
     return (
         <div className='w-full h-full flex bg-primary p-2'>
 
-            <div className="w-[280px] h-full bg-primary flex flex-col gap-[20px]">
+            <div className="w-[250px] h-full bg-primary flex flex-col gap-[20px]">
 
                 <div className="flex flex-row w-full h-[80px] bg-amber-500 items-center rounded-3xl">
                     <img src="logo.png" alt="Logo" className="h-[80px]" />
@@ -36,7 +36,7 @@ export default function AdminPage() {
 
             </div>
 
-            <div className="w-[calc(100%-280px)] h-full bg-primary rounded-[20px] border-accent border-3 overflow-hidden">
+            <div className="w-[calc(100%-250px)] h-full bg-primary rounded-[20px] border-accent border-3 overflow-hidden justify-center items-center">
 
                 <div className="h-full w-full max-w-full max-h-full overflow-y-scroll">
                     <Routes>

@@ -1,39 +1,36 @@
+
 import { useState } from "react";
+import mediaUpload from "../utils/mediaUpload";
+
+
+
+
 
 export default function TestPage() {
+    const [file, setFile] = useState(null);
 
-    const [count,setCount] = useState(10)
+    async function uploadImage() {
+      
+        const link = await mediaUpload(file)
+        console.log(link)
+                                
+    }
 
     return (
-        <div className="w-full h-full flex justify-center items-center text-2xl font-semibold ">
+        <div className="w-full h-full flex justify-center items-center text-2xl font-semibold">
+            <input
+                type="file"
+                onChange={(e) => {
+                    setFile(e.target.files[0]);
+                }}
+            />
 
-            <div className="w-[500px] h-[500px] bg-accent flex justify-center items-center flex-col gap-[20px] rounded-[20px]">
-
-                <button onClick={
-                    () => {
-                        console.log("Adding")
-                        setCount(count + 1) 
-                    }
-                } className="w-[100px] h-[50px] bg-primary text-accent rounded-[10px]">
-                    +
-                </button>
-
-                <span className="text-[30px] text-primary font-semibold">
-                    {count}
-                </span>
-
-                <button onClick={
-                    () => {
-                        console.log("Subtracting")
-                        setCount(count - 1)
-                    }
-                } className="w-[100px] h-[50px] bg-primary text-accent rounded-[10px]">
-                    -
-                </button>
-
-            </div>
-
+            <button
+                onClick={uploadImage}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg ml-4"
+            >
+                Upload
+            </button>
         </div>
-    )
-
+    );
 }
