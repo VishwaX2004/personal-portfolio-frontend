@@ -10,10 +10,11 @@ import {
     FaPalette,
     FaBoxes,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function AdminProductPage() {
     const [products, setProducts] = useState([]);
+    const navigate = useNavigate();
 
     // Get products
     useEffect(() => {
@@ -60,7 +61,7 @@ export default function AdminProductPage() {
                         <CiCirclePlus className="text-2xl transition-transform duration-300 group-hover:rotate-90" />
 
                         <span>
-                            Add Product
+                            Add  Product
                         </span>
                     </Link>
 
@@ -490,6 +491,15 @@ export default function AdminProductPage() {
                                             <div className="flex min-w-[90px] items-center justify-center gap-2">
 
                                                 <button
+                                                    onClick={
+                                                        ()=>{
+                                                            navigate("/admin/update-product",
+                                                                {
+                                                                    state : item
+                                                                }
+                                                            )
+                                                        }
+                                                    }
                                                     type="button"
                                                     title="Edit product"
                                                     className="group/edit flex h-10 w-10 items-center justify-center rounded-xl border border-accent/15 bg-primary text-accent/65 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-accent hover:text-primary hover:shadow-md"

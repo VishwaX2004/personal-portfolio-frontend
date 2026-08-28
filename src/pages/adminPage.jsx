@@ -2,6 +2,7 @@ import { Link, Route, Routes } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
 import AdminProductPage from "./admin/adminProductPage";
 import AdminAddNewProduct from "./admin/adminAddNewProduct";
+import AdminUpdateProduct from "./admin/adminUpdataProduct";
 
 export default function AdminPage() {
     return (
@@ -34,6 +35,8 @@ export default function AdminPage() {
                     <span>Users</span>
                 </Link>
 
+
+
             </div>
 
             <div className="w-[calc(100%-250px)] h-full bg-primary rounded-[20px] border-accent border-3 overflow-hidden justify-center items-center">
@@ -45,7 +48,9 @@ export default function AdminPage() {
                         <Route path="/products" element={<AdminProductPage />} />
                         <Route path="/orders" element={<h1>Orders</h1>} />
                         <Route path="/add-product" element={<AdminAddNewProduct />} />
+                        <Route path="/update-product" element={<AdminUpdateProduct />} />
                         <Route path="/*" element={<h1>404 Not Found</h1>} />
+
 
                     </Routes>
                 </div>
