@@ -3,7 +3,7 @@ export default function ProductCard(props) {
     const product = props.product;
 
     return (
-        <div className="group w-[320px] h-[455px] bg-primary rounded-2xl overflow-hidden border border-accent/15 shadow-[0_8px_25px_rgba(8,6,22,0.08)] hover:shadow-[0_18px_45px_rgba(8,6,22,0.18)] hover:-translate-y-2 transition-all duration-500 cursor-pointer">
+        <div className="group w-[320px] h-[455px] bg-primary rounded-2xl overflow-hidden border border-accent/15 shadow-[0_8px_25px_rgba(8,6,22,0.08)] hover:shadow-[0_18px_45px_rgba(8,6,22,0.18)] hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-wrap">
 
             {/* ================= IMAGE ================= */}
             <div className="relative w-full h-[265px] overflow-hidden bg-white">
