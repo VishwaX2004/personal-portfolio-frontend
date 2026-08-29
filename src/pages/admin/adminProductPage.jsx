@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { CiCirclePlus } from "react-icons/ci";
 import {
     FaRegEdit,
@@ -11,22 +12,93 @@ import {
     FaBoxes,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { Loader } from "../../components/loader";
+
+function AdminProductDeleteConfirm(props) {
+
+    const productID = props.productID;
+    const onClose = props.onClose;
+    const refresh = props.refresh;
+
+
+    function handleDelete() {
+
+        const token = localStorage.getItem("token");
+
+        axios.delete(import.meta.env.VITE_API_URL + "/api/products/" + productID,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }
+        )
+            .then((response) => {
+                console.log("Product deleted successfully:", response.data);
+                toast.success("Product deleted successfully");
+                refresh();
+                onClose();
+            })
+            .catch((error) => {
+                console.error("Error deleting product:", error);
+                toast.error("Error deleting product");
+            });
+
+    }
+
+    return (
+        <div className="fixed flex left-0 right-0 h-[100vh] w-full bg-[#00000050] z-[100] justify-center items-center">
+
+            <div className="w-[450px] h-[250px] bg-primary relative flex flex-col justify-center items-center gap-5 rounded-xl shadow-lg">
+
+                <button className="w-[40px] h-[40px] bg-red-600 rounded-full text-white absolute font-bold hover:bg-white hover:text-red-500 top-[-40px] right-[-40px]" onClick={onClose}>
+                    x
+                </button>
+
+                <p>Are you sure you want to delete this product? Product ID: {productID}</p>
+
+                <div className="flex gap-10">
+                    <button className="bg-red-600 text-white px-4 py-2 rounded-lg mr-2 hover:bg-red-500" onClick={handleDelete}>
+                        yes
+                    </button>
+
+                    <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-500" onClick={onClose}>
+                        cancel
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    )
+
+}
 
 export default function AdminProductPage() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
+    const [isDeleteConfirmvisible, setIsDeleteConfirmVisible] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [isloading, setIsLoading] = useState(true);
 
     // Get products
     useEffect(() => {
-        axios
-            .get(import.meta.env.VITE_API_URL + "/api/products")
-            .then((response) => {
-                setProducts(response.data);
-            });
-    }, []);
+        if (isloading) {
+            axios
+                .get(import.meta.env.VITE_API_URL + "/api/products")
+                .then((response) => {
+                    setProducts(response.data);
+                    setIsLoading(false)
+                });
+        }
+    }, [isloading]);
 
     return (
+
         <div className="min-h-full w-full bg-primary p-4 text-accent sm:p-6 lg:p-8">
+
+            {
+                isDeleteConfirmvisible && <AdminProductDeleteConfirm refresh={() => setIsLoading(true)} productID={productToDelete} onClose={() => setIsDeleteConfirmVisible(false)} />
+            }
 
             {/* Header */}
             <div className="mx-auto mb-8 max-w-[1700px]">
@@ -141,7 +213,7 @@ export default function AdminProductPage() {
 
 
                 {/* Table */}
-                <div className="w-full overflow-x-auto">
+                {isloading ? <Loader/> : <div className="w-full overflow-x-auto">
 
                     <table className="w-full min-w-[1200px] border-collapse">
 
@@ -241,7 +313,7 @@ export default function AdminProductPage() {
                                                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-accent/10 bg-primary shadow-sm">
 
                                                     {item.images &&
-                                                    item.images.length > 0 ? (
+                                                        item.images.length > 0 ? (
 
                                                         <img
                                                             src={item.images[0]}
@@ -437,19 +509,17 @@ export default function AdminProductPage() {
                                             <div className="min-w-[120px]">
 
                                                 <span
-                                                    className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold ${
-                                                        totalStock > 0
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-red-100 text-red-700"
-                                                    }`}
+                                                    className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold ${totalStock > 0
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-red-100 text-red-700"
+                                                        }`}
                                                 >
 
                                                     <span
-                                                        className={`h-2 w-2 rounded-full ${
-                                                            totalStock > 0
-                                                                ? "bg-green-600"
-                                                                : "bg-red-500"
-                                                        }`}
+                                                        className={`h-2 w-2 rounded-full ${totalStock > 0
+                                                            ? "bg-green-600"
+                                                            : "bg-red-500"
+                                                            }`}
                                                     />
 
                                                     {totalStock > 0
@@ -492,10 +562,10 @@ export default function AdminProductPage() {
 
                                                 <button
                                                     onClick={
-                                                        ()=>{
+                                                        () => {
                                                             navigate("/admin/update-product",
                                                                 {
-                                                                    state : item
+                                                                    state: item
                                                                 }
                                                             )
                                                         }
@@ -511,6 +581,12 @@ export default function AdminProductPage() {
 
 
                                                 <button
+                                                    onClick={
+                                                        () => {
+                                                            setIsDeleteConfirmVisible(true);
+                                                            setProductToDelete(item.productID);
+                                                        }
+                                                    }
                                                     type="button"
                                                     title="Delete product"
                                                     className="group/delete flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-500 transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-500 hover:text-white hover:shadow-md"
@@ -534,39 +610,8 @@ export default function AdminProductPage() {
 
                     </table>
 
-                </div>
-
-
-                {/* Empty state */}
-                {products.length === 0 && (
-
-                    <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-
-                        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-primary shadow-lg">
-                            <FaBoxOpen className="text-2xl" />
-                        </div>
-
-                        <h3 className="text-lg font-bold text-accent">
-                            No products yet
-                        </h3>
-
-                        <p className="mt-2 max-w-md text-sm leading-6 text-accent/55">
-                            Your clothing catalog is currently empty. Add your
-                            first product with sizes, colors and variant-level
-                            stock.
-                        </p>
-
-                        <Link
-                            to="/admin/add-product"
-                            className="mt-6 rounded-xl bg-accent px-6 py-3 text-sm font-bold text-primary shadow-lg shadow-accent/15 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
-                        >
-                            Add Your First Product
-                        </Link>
-
-                    </div>
-
-                )}
-
+                </div>}
+                
             </div>
 
 
@@ -634,9 +679,8 @@ function SummaryCard({
 function TableHeader({ children, center = false }) {
     return (
         <th
-            className={`px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-accent/65 ${
-                center ? "text-center" : "text-left"
-            }`}
+            className={`px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-accent/65 ${center ? "text-center" : "text-left"
+                }`}
         >
             {children}
         </th>
