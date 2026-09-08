@@ -87,7 +87,6 @@ export default function AdminAddNewProduct() {
 
     }
 
-
     function toggleColor(color) {
 
         setSelectedColors((current) =>
@@ -99,7 +98,6 @@ export default function AdminAddNewProduct() {
         );
 
     }
-
 
     function addVariant() {
 
@@ -115,9 +113,7 @@ export default function AdminAddNewProduct() {
             return;
         }
 
-
         const newVariants = [];
-
 
         selectedSizes.forEach((size) => {
 
@@ -205,7 +201,6 @@ export default function AdminAddNewProduct() {
         );
 
     }
-
 
     async function addProduct() {
 
@@ -326,21 +321,9 @@ export default function AdminAddNewProduct() {
             return;
         }
 
-
         try {
 
             setLoading(true);
-
-
-            /*
-             * Upload all selected images.
-             *
-             * mediaUpload() now returns:
-             *
-             * "https://....jpg"
-             *
-             * instead of the Supabase response object.
-             */
             const uploadPromises =
                 images.map((file) =>
                     mediaUpload(file)
@@ -352,10 +335,6 @@ export default function AdminAddNewProduct() {
                     uploadPromises
                 );
 
-
-            /*
-             * Make sure every image is a string.
-             */
             if (
                 !imageUrls.every(
                     (url) =>
@@ -368,7 +347,6 @@ export default function AdminAddNewProduct() {
                 );
 
             }
-
 
             const altNameList =
                 altNames
@@ -418,7 +396,6 @@ export default function AdminAddNewProduct() {
                                 variant.sku.trim();
 
                         }
-
 
                         return cleanedVariant;
 

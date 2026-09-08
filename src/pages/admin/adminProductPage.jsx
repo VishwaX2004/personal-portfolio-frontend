@@ -327,6 +327,8 @@ export default function AdminProductPage() {
                                                             <FaBoxOpen className="text-xl" />
                                                         </div>
 
+
+
                                                     )}
 
                                                 </div>
