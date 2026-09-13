@@ -8,7 +8,6 @@ import { AuthProvider } from "./context/authContext";
 
 import "./index.css";
 
-
 ReactDOM.createRoot(
   document.getElementById("root")
 ).render(

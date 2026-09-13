@@ -14,15 +14,25 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
 
+  // =========================================================
+  // INPUT CHANGE
+  // =========================================================
+
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
+
+  // =========================================================
+  // LOGIN
+  // =========================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
 
     setLoading(true);
 
@@ -31,30 +41,73 @@ export default function Login() {
 
       const user = response.data;
 
-      // Make sure only admin can access dashboard
-      if (!user.isAdmin) {
-        toast.error("You don't have admin access.");
+      // =====================================================
+      // CHECK RESPONSE
+      // =====================================================
+
+      if (!user) {
+        toast.error("Invalid login response.");
         return;
       }
 
-      // Store authentication data
-      localStorage.setItem("token", user.token);
+      // =====================================================
+      // NORMAL USER
+      // =====================================================
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        })
-      );
+      if (!user.isAdmin) {
+        toast.success("Login successful!");
 
-      toast.success("Login successful!");
+        // Store normal user authentication too
+        if (user.token) {
+          localStorage.setItem("token", user.token);
+        }
 
-      navigate("/admin");
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: false,
+          })
+        );
+
+        // Normal users go to Home
+        navigate("/", { replace: true });
+
+        return;
+      }
+
+      // =====================================================
+      // ADMIN USER
+      // =====================================================
+
+      if (user.isAdmin) {
+        // Store token
+        localStorage.setItem("token", user.token);
+
+        // Store user
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: true,
+          })
+        );
+
+        toast.success("Admin login successful!");
+
+        // Admin goes to dashboard
+        navigate("/admin", { replace: true });
+
+        return;
+      }
 
     } catch (error) {
+      console.error("Login error:", error);
+
       toast.error(
         error.response?.data?.message ||
         "Invalid email or password"
@@ -64,10 +117,17 @@ export default function Login() {
     }
   };
 
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
 
-      {/* Background effects */}
+      {/* =====================================================
+          BACKGROUND
+      ====================================================== */}
+
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
 
         <div className="absolute top-10 left-10 w-72 h-72 bg-blue-600/20 rounded-full blur-[120px]" />
@@ -76,34 +136,79 @@ export default function Login() {
 
       </div>
 
+
+      {/* =====================================================
+          LOGIN CONTAINER
+      ====================================================== */}
+
       <div className="relative w-full max-w-md">
 
         {/* Back */}
+
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition mb-8"
+          className="
+            inline-flex
+            items-center
+            gap-2
+            text-gray-500
+            hover:text-white
+            transition-all
+            duration-300
+            mb-8
+          "
         >
           <ArrowLeft size={18} />
           Back to portfolio
         </Link>
 
-        {/* Card */}
-        <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-8 md:p-10 backdrop-blur-xl">
+
+        {/* ===================================================
+            CARD
+        ==================================================== */}
+
+        <div
+          className="
+            bg-white/[0.04]
+            border
+            border-white/10
+            rounded-3xl
+            p-8
+            md:p-10
+            backdrop-blur-xl
+            shadow-2xl
+          "
+        >
 
           {/* Logo */}
+
           <div className="mb-8">
 
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-5">
+            <div
+              className="
+                w-12
+                h-12
+                rounded-2xl
+                bg-blue-600
+                flex
+                items-center
+                justify-center
+                mb-5
+              "
+            >
               <Lock size={22} />
             </div>
+
 
             <p className="text-blue-500 text-sm font-semibold tracking-widest">
               ADMIN PANEL
             </p>
 
+
             <h1 className="text-3xl font-bold mt-2">
               Welcome back
             </h1>
+
 
             <p className="text-gray-500 mt-2">
               Sign in to manage your portfolio.
@@ -111,13 +216,18 @@ export default function Login() {
 
           </div>
 
-          {/* Form */}
+
+          {/* =================================================
+              FORM
+          ================================================== */}
+
           <form
             onSubmit={handleSubmit}
             className="space-y-5"
           >
 
             {/* Email */}
+
             <div>
 
               <label className="block text-sm text-gray-400 mb-2">
@@ -128,7 +238,13 @@ export default function Login() {
 
                 <Mail
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="
+                    absolute
+                    left-4
+                    top-1/2
+                    -translate-y-1/2
+                    text-gray-500
+                  "
                 />
 
                 <input
@@ -138,14 +254,30 @@ export default function Login() {
                   onChange={handleChange}
                   placeholder="your@email.com"
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 transition"
+                  autoComplete="email"
+                  className="
+                    w-full
+                    bg-black/40
+                    border
+                    border-white/10
+                    rounded-xl
+                    py-3.5
+                    pl-11
+                    pr-4
+                    outline-none
+                    focus:border-blue-500
+                    transition-all
+                    duration-300
+                  "
                 />
 
               </div>
 
             </div>
 
+
             {/* Password */}
+
             <div>
 
               <label className="block text-sm text-gray-400 mb-2">
@@ -156,7 +288,13 @@ export default function Login() {
 
                 <Lock
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="
+                    absolute
+                    left-4
+                    top-1/2
+                    -translate-y-1/2
+                    text-gray-500
+                  "
                 />
 
                 <input
@@ -166,18 +304,50 @@ export default function Login() {
                   onChange={handleChange}
                   placeholder="Enter your password"
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 transition"
+                  autoComplete="current-password"
+                  className="
+                    w-full
+                    bg-black/40
+                    border
+                    border-white/10
+                    rounded-xl
+                    py-3.5
+                    pl-11
+                    pr-4
+                    outline-none
+                    focus:border-blue-500
+                    transition-all
+                    duration-300
+                  "
                 />
 
               </div>
 
             </div>
 
+
             {/* Submit */}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl py-3.5 font-medium flex items-center justify-center gap-2 transition"
+              className="
+                w-full
+                bg-blue-600
+                hover:bg-blue-700
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+                rounded-xl
+                py-3.5
+                font-medium
+                flex
+                items-center
+                justify-center
+                gap-2
+                transition-all
+                duration-300
+                hover:-translate-y-0.5
+              "
             >
 
               {loading ? (
@@ -192,6 +362,7 @@ export default function Login() {
             </button>
 
           </form>
+
 
           <p className="text-xs text-gray-600 text-center mt-8">
             Private administration area
