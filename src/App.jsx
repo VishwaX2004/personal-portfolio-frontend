@@ -1,32 +1,57 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import './App.css'
-import AdminPage from './pages/adminPage'
-import HomePage from './pages/homePage'
-import TestPage from './pages/test'
-import LoginPage from './pages/loginPage'
-import { Toaster } from 'react-hot-toast'
+import { Routes, Route } from "react-router-dom";
+import ScrollToTop from "./components/scrollToTop";
+import Home from "./pages/homePage";
+import ProjectsPage from "./pages/projectPage";
+import ProjectDetails from "./pages/projectDetails";
+import Login from "./pages/login";
+import AdminDashboard from "./pages/adminDashboard";
+
+
+
+
+
+
 
 function App() {
-
   return (
-    <BrowserRouter>
+    <>
+      <ScrollToTop />
 
-      <div className='w-full h-[100vh]'>
+      <Routes>
 
-        <Toaster position="top-right" />
+        {/* Public Pages */}
 
-        <Routes path="/">
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-          <Route path="/*" element={<HomePage />}></Route>
+        <Route
+          path="/projects"
+          element={<ProjectsPage />}
+        />
 
-          <Route path="/register" element={<h1>Register Page</h1>}></Route>
+        <Route
+          path="/projects/:id"
+          element={<ProjectDetails />}
+        />
 
-        </Routes>
 
-      </div>
+        {/* Admin Pages */}
 
-    </BrowserRouter>
-  )
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
+          path="/admin"
+          element={<AdminDashboard />}
+        />
+
+      </Routes>
+    </>
+  );
 }
 
-export default App
+export default App;

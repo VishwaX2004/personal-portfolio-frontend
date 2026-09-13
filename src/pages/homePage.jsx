@@ -1,24 +1,39 @@
-import { Route, Routes } from "react-router-dom";
-import Header from "../components/header";
-import { ProductPage } from "./productPage";
-import Footer from "../components/footer";
+import { Toaster } from "react-hot-toast";
+
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Hero from "../components/hero";
+import About from "../components/about";
+import Skills from "../components/skills";
+import Projects from "../components/projects";
+import Contact from "../components/contacts";
 
 
-export default function HomePage() {
-    return (
-        <div className='w-full h-full flex flex-col bg-primary'>
+export default function Home() {
 
-            <Header />
+  return (
+    <div className="bg-black text-white min-h-screen">
 
-            <Routes path="/">
-                <Route path="/" element={<h1>Home</h1>} />
-                <Route path="/shop" element={<ProductPage />} />
-                <Route path="/about" element={<h1>About</h1>} />
-                <Route path="/contact" element={<h1>Contact</h1>} />
-                <Route path="/*" element={<h1>404 Not Found</h1>} />
-            </Routes>
+      <Toaster position="top-right" />
 
-            <Footer/>
-        </div>
-    )
+      <Header />
+
+      <main>
+
+        <Hero />
+
+        <About />
+
+        <Skills />
+
+        <Projects />
+
+        <Contact />
+
+      </main>
+
+      <Footer />
+
+    </div>
+  );
 }
