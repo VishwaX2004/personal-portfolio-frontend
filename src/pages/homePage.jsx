@@ -7,8 +7,8 @@ import Skills from "../components/skills";
 import Experience from "../components/experience";
 import Projects from "../components/projects";
 import Contact from "../components/contacts";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/header";
+import Footer from "../components/footer";
 
 export default function Home() {
   return (

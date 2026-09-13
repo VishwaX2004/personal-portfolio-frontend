@@ -12,8 +12,9 @@ import ProjectsPage from "./pages/projectPage";
 import ProjectDetails from "./pages/projectDetails";
 import Login from "./pages/login";
 import AdminDashboard from "./pages/adminDashboard";
+import AdminRoute from "./components/adminRoute";
 
-import AdminRoute from "./components/AdminRoute";
+
 
 function App() {
 
