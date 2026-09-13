@@ -21,11 +21,6 @@ function App() {
 
           <Route path="/register" element={<h1>Register Page</h1>}></Route>
 
-          <Route path="/login" element={<LoginPage />}></Route>
-
-          <Route path="/admin/*" element={<AdminPage />}></Route>
-
-          <Route path="/test" element={<TestPage />}></Route>
         </Routes>
 
       </div>
