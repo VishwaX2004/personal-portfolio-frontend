@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between gap-8">
 
           {/* =====================================================
-              BRAND
+              
           ====================================================== */}
 
           <div>

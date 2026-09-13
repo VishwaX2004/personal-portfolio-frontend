@@ -1090,7 +1090,7 @@ export default function Header() {
                 </svg>
               </a>
 
-              {/* LinkedIn */}
+              {/* LinkedIn logo */}
 
               <a
                 href={linkedinUrl}
