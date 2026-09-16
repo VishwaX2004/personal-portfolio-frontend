@@ -1,66 +1,17 @@
-import { useEffect } from "react";
-import {
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
-
-import { Home } from "lucide-react";
-
+import ScrollToTop from "./components/scrollToTop";
+import Login from "./pages/login";
+import ProjectDetails from "./pages/projectDetails";
+import ProjectPage from "./pages/projectPage";
+import HomePage from "./pages/homePage";
+import AdminDashboard from "./pages/adminDashboard";
+import AdminRoute from "./components/adminRoute";
 
 function App() {
-
-  const location = useLocation();
-
-  // =========================================================
-  // HANDLE HOME PAGE HASH NAVIGATION
-  // =========================================================
-
-  useEffect(() => {
-
-    if (location.pathname !== "/") {
-      return;
-    }
-
-    if (!location.hash) {
-      return;
-    }
-
-    const sectionId = location.hash.substring(1);
-
-    const timer = setTimeout(() => {
-
-      const section = document.getElementById(sectionId);
-
-      if (!section) {
-        return;
-      }
-
-      const headerHeight = 80;
-
-      const sectionTop =
-        section.getBoundingClientRect().top +
-        window.scrollY -
-        headerHeight;
-
-      window.scrollTo({
-        top: sectionTop,
-        behavior: "smooth",
-      });
-
-    }, 100);
-
-    return () => clearTimeout(timer);
-
-  }, [
-    location.pathname,
-    location.hash,
-  ]);
-
-
   return (
     <>
+      {/* Handle page and hash scrolling */}
       <ScrollToTop />
 
       <Routes>
@@ -71,12 +22,12 @@ function App() {
 
         <Route
           path="/"
-          element={<Home />}
+          element={<HomePage />}
         />
 
         <Route
           path="/projects"
-          element={<projectPage/>}
+          element={<ProjectPage />}
         />
 
         <Route
@@ -102,7 +53,6 @@ function App() {
           />
 
         </Route>
-
 
       </Routes>
     </>

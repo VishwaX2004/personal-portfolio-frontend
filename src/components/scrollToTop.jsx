@@ -7,6 +7,7 @@ export default function ScrollToTop() {
   useEffect(() => {
     // Give React time to render the destination page
     const timer = setTimeout(() => {
+
       // =====================================================
       // HASH / SECTION NAVIGATION
       // =====================================================
@@ -16,13 +17,19 @@ export default function ScrollToTop() {
           location.hash.substring(1)
         );
 
-        const element =
-          document.getElementById(sectionId);
+        const element = document.getElementById(sectionId);
 
         if (element) {
-          element.scrollIntoView({
+          const headerHeight = 80;
+
+          const elementPosition =
+            element.getBoundingClientRect().top +
+            window.scrollY;
+
+          window.scrollTo({
+            top: elementPosition - headerHeight,
+            left: 0,
             behavior: "smooth",
-            block: "start",
           });
 
           return;
@@ -38,9 +45,11 @@ export default function ScrollToTop() {
         left: 0,
         behavior: "smooth",
       });
-    }, 50);
+
+    }, 100);
 
     return () => clearTimeout(timer);
+
   }, [location.pathname, location.hash]);
 
   return null;

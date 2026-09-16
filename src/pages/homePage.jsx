@@ -10,7 +10,7 @@ import Contact from "../components/contacts";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div className="bg-black text-white min-h-screen">
 
