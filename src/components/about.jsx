@@ -48,10 +48,10 @@ export default function About() {
         overflow-hidden
         bg-[#080808]
         text-white
-        py-20
+        py-40
         sm:py-15
-        lg:py-17
-        mb-[20px]
+        lg:py-7
+        
       "
     >
       {/* =====================================================

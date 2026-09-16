@@ -132,7 +132,7 @@ export default function Skills() {
         relative
         py-24
         sm:py-28
-        lg:py-15
+        lg:py-5
         overflow-hidden
         bg-black
         text-white
