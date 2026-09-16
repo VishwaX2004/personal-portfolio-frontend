@@ -737,56 +737,7 @@ export default function Hero() {
               STATUS BADGE
           ================================================== */}
 
-          <div
-            className="
-              inline-flex
-              items-center
-              gap-2.5
-              px-3.5
-              py-2
-              rounded-full
-              border
-              border-white/10
-              bg-white/[0.035]
-              backdrop-blur-xl
-              shadow-[0_10px_40px_rgba(0,0,0,0.3)]
-              mb-6
-              animate-[fadeIn_0.8s_ease-out_both]
-            "
-          >
-
-            <span className="relative flex h-2 w-2">
-
-              <span
-                className="
-                  absolute
-                  inset-0
-                  rounded-full
-                  bg-blue-500
-                  animate-ping
-                  opacity-70
-                "
-              />
-
-              <span
-                className="
-                  relative
-                  block
-                  w-2
-                  h-2
-                  rounded-full
-                  bg-blue-500
-                  shadow-[0_0_12px_rgba(59,130,246,0.8)]
-                "
-              />
-
-            </span>
-
-            <span className="text-xs sm:text-sm text-gray-300">
-              Available for opportunities
-            </span>
-
-          </div>
+         
 
 
           {/* =================================================
