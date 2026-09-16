@@ -7,7 +7,7 @@ import Footer from "../components/footer";
 import API from "../services/api";
 import ProjectCard from "../components/projectCard";
 
-export default function ProjectsPage() {
+export default function ProjectPage() {
 
   const [projects, setProjects] = useState([]);
 

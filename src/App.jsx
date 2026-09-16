@@ -5,15 +5,8 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import ScrollToTop from "./components/scrollToTop";
 
-import Home from "./pages/homePage";
-import ProjectsPage from "./pages/projectPage";
-import ProjectDetails from "./pages/projectDetails";
-import Login from "./pages/login";
-import AdminDashboard from "./pages/adminDashboard";
-import AdminRoute from "./components/adminRoute";
-
+import { Home } from "lucide-react";
 
 
 function App() {
@@ -83,7 +76,7 @@ function App() {
 
         <Route
           path="/projects"
-          element={<ProjectsPage />}
+          element={<projectPage/>}
         />
 
         <Route
