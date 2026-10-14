@@ -55,8 +55,6 @@ export const validateEducationForm = (formData) => {
 
   if (!formData.year) {
     errors.push("Year is required");
-  } else if (!/^\d{4}$/.test(formData.year.toString())) {
-    errors.push("Year must be a 4-digit number");
   } else {
     const year = parseInt(formData.year, 10);
     if (year < 1900 || year > 2099) {
@@ -72,8 +70,19 @@ export const validateEducationForm = (formData) => {
 // ============================================================
 
 export const parseErrorMessage = (error) => {
+  // Try common error response structures
   if (error.response?.data?.message) {
     return error.response.data.message;
+  }
+
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+
+  if (error.response?.data) {
+    if (typeof error.response.data === "string") {
+      return error.response.data;
+    }
   }
 
   if (error.message) {

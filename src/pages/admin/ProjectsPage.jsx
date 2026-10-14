@@ -270,16 +270,25 @@ export default function ProjectsPage() {
 
       {/* Project List */}
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project._id}
-            project={project}
-            onEdit={openEditModal}
-            onDelete={handleDeleteProject}
-          />
-        ))}
-      </div>
+      {projects.length === 0 ? (
+        <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white/[0.03] border border-white/10 rounded-2xl">
+          <FolderKanban size={48} className="text-gray-700 mb-3" />
+          <p className="text-gray-500 text-center">
+            No projects yet. Add your first project to get started.
+          </p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project._id}
+              project={project}
+              onEdit={openEditModal}
+              onDelete={handleDeleteProject}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Edit Modal */}
 
