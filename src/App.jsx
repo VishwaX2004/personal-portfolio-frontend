@@ -1,12 +1,16 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import ScrollToTop from "./components/scrollToTop";
 import Login from "./pages/login";
 import ProjectDetails from "./pages/projectDetails";
 import ProjectPage from "./pages/projectPage";
 import HomePage from "./pages/homePage";
-import AdminDashboard from "./pages/adminDashboard";
 import AdminRoute from "./components/adminRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import DashboardPage from "./pages/admin/DashboardPage";
+import ProjectsPage from "./pages/admin/ProjectsPage";
+import EducationPage from "./pages/admin/EducationPage";
+import MessagesPage from "./pages/admin/MessagesPage";
 
 function App() {
   return (
@@ -49,8 +53,35 @@ function App() {
 
           <Route
             path="/admin"
-            element={<AdminDashboard />}
-          />
+            element={<AdminLayout />}
+          >
+
+            <Route
+              index
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+
+            <Route
+              path="dashboard"
+              element={<DashboardPage />}
+            />
+
+            <Route
+              path="projects"
+              element={<ProjectsPage />}
+            />
+
+            <Route
+              path="education"
+              element={<EducationPage />}
+            />
+
+            <Route
+              path="messages"
+              element={<MessagesPage />}
+            />
+
+          </Route>
 
         </Route>
 
