@@ -7,6 +7,7 @@ import ProjectPage from "./pages/projectPage";
 import HomePage from "./pages/homePage";
 import AdminRoute from "./components/adminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
+import AdminLoginPage from "./pages/admin/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import ProjectsPage from "./pages/admin/ProjectsPage";
 import EducationPage from "./pages/admin/EducationPage";
@@ -42,6 +43,11 @@ function App() {
         <Route
           path="/login"
           element={<Login />}
+        />
+
+        <Route
+          path="/admin/login"
+          element={<AdminLoginPage />}
         />
 
 

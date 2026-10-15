@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,36 +9,21 @@ import {
   ExternalLink,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { clearAdminToken } from "../../utils/adminAuth";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
-
-  // =========================================================
-  // LOAD USER FROM LOCAL STORAGE
-  // =========================================================
-
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (error) {
-      console.error("Error loading user:", error);
-    }
-  }, []);
+  const [adminUsername, setAdminUsername] = useState("Admin");
 
   // =========================================================
   // LOGOUT
   // =========================================================
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAdminToken();
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/admin/login");
   };
 
   // =========================================================
@@ -170,9 +155,9 @@ export default function AdminLayout() {
 
         <div className="p-4 border-t border-white/10">
           <div className="px-3 py-3 mb-2">
-            <p className="text-sm font-medium truncate">{user?.name}</p>
+            <p className="text-sm font-medium truncate">{adminUsername}</p>
 
-            <p className="text-xs text-gray-600 truncate">{user?.email}</p>
+            <p className="text-xs text-gray-600 truncate">Admin Account</p>
           </div>
 
           <button

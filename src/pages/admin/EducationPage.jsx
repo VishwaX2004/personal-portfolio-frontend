@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, Edit2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import {
-  getEducation,
-  createEducation,
-  updateEducation,
-  deleteEducation,
-} from "../../services/api";
+  getAdminEducation,
+  createAdminEducation,
+  updateAdminEducation,
+  deleteAdminEducation,
+} from "../../services/adminService";
 import AdminModal from "../../components/admin/AdminModal";
-import { validateEducationForm, parseErrorMessage } from "../../utils/adminHelpers";
 
 export default function EducationPage() {
   const [education, setEducation] = useState([]);
@@ -17,28 +16,23 @@ export default function EducationPage() {
   const [editingEducation, setEditingEducation] = useState(null);
 
   const [formData, setFormData] = useState({
-    title: "",
-    school: "",
-    year: "",
-    grade: "",
+    institution: "",
+    degree: "",
+    field: "",
+    startYear: "",
+    endYear: "",
     description: "",
+    order: "",
   });
-
-  // =========================================================
-  // FETCH EDUCATION
-  // =========================================================
 
   const fetchEducation = async () => {
     try {
       setLoading(true);
-      const data = await getEducation();
+      const data = await getAdminEducation();
       setEducation(data || []);
     } catch (error) {
       console.error("Error fetching education:", error);
-      // Don't show error toast if endpoint doesn't exist yet
-      if (error.response?.status !== 404) {
-        toast.error("Failed to load education data");
-      }
+      toast.error("Failed to load education data");
     } finally {
       setLoading(false);
     }
@@ -48,70 +42,57 @@ export default function EducationPage() {
     fetchEducation();
   }, []);
 
-  // =========================================================
-  // HANDLE FORM INPUT
-  // =========================================================
-
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // =========================================================
-  // RESET FORM
-  // =========================================================
-
   const resetForm = () => {
     setFormData({
-      title: "",
-      school: "",
-      year: "",
-      grade: "",
+      institution: "",
+      degree: "",
+      field: "",
+      startYear: "",
+      endYear: "",
       description: "",
+      order: "",
     });
     setEditingEducation(null);
   };
 
-  // =========================================================
-  // OPEN EDIT MODAL
-  // =========================================================
-
   const openEditModal = (item) => {
     setEditingEducation(item);
     setFormData({
-      title: item.title || "",
-      school: item.school || "",
-      year: item.year?.toString() || "",
-      grade: item.grade || "",
+      institution: item.institution || "",
+      degree: item.degree || "",
+      field: item.field || "",
+      startYear: item.startYear?.toString() || "",
+      endYear: item.endYear?.toString() || "",
       description: item.description || "",
+      order: item.order?.toString() || "",
     });
   };
-
-  // =========================================================
-  // CREATE EDUCATION
-  // =========================================================
 
   const handleCreateEducation = async (e) => {
     e.preventDefault();
 
-    const errors = validateEducationForm(formData);
-
-    if (errors.length > 0) {
-      toast.error(errors[0]);
+    if (!formData.institution || !formData.degree || !formData.field || !formData.startYear) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
     try {
-      await createEducation({
-        title: formData.title,
-        school: formData.school,
-        year: parseInt(formData.year, 10),
-        grade: formData.grade,
+      await createAdminEducation({
+        institution: formData.institution,
+        degree: formData.degree,
+        field: formData.field,
+        startYear: parseInt(formData.startYear, 10),
+        endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
         description: formData.description,
+        order: formData.order ? parseInt(formData.order, 10) : 0,
       });
 
       toast.success("Education added successfully!");
@@ -120,31 +101,27 @@ export default function EducationPage() {
       fetchEducation();
     } catch (error) {
       console.error(error);
-      toast.error(parseErrorMessage(error));
+      toast.error(error.response?.data?.message || "Failed to add education");
     }
   };
-
-  // =========================================================
-  // UPDATE EDUCATION
-  // =========================================================
 
   const handleUpdateEducation = async (e) => {
     e.preventDefault();
 
-    const errors = validateEducationForm(formData);
-
-    if (errors.length > 0) {
-      toast.error(errors[0]);
+    if (!formData.institution || !formData.degree || !formData.field || !formData.startYear) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
     try {
-      await updateEducation(editingEducation._id, {
-        title: formData.title,
-        school: formData.school,
-        year: parseInt(formData.year, 10),
-        grade: formData.grade,
+      await updateAdminEducation(editingEducation._id, {
+        institution: formData.institution,
+        degree: formData.degree,
+        field: formData.field,
+        startYear: parseInt(formData.startYear, 10),
+        endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
         description: formData.description,
+        order: formData.order ? parseInt(formData.order, 10) : 0,
       });
 
       toast.success("Education updated successfully!");
@@ -153,13 +130,9 @@ export default function EducationPage() {
       fetchEducation();
     } catch (error) {
       console.error(error);
-      toast.error(parseErrorMessage(error));
+      toast.error(error.response?.data?.message || "Failed to update education");
     }
   };
-
-  // =========================================================
-  // DELETE EDUCATION
-  // =========================================================
 
   const handleDeleteEducation = async (id) => {
     const confirmDelete = window.confirm(
@@ -169,7 +142,7 @@ export default function EducationPage() {
     if (!confirmDelete) return;
 
     try {
-      await deleteEducation(id);
+      await deleteAdminEducation(id);
       toast.success("Education deleted");
       fetchEducation();
     } catch (error) {
@@ -177,10 +150,6 @@ export default function EducationPage() {
       toast.error("Failed to delete education");
     }
   };
-
-  // =========================================================
-  // LOADING
-  // =========================================================
 
   if (loading) {
     return (
@@ -192,12 +161,9 @@ export default function EducationPage() {
 
   return (
     <>
-      {/* Header */}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
         <div>
           <h2 className="text-2xl font-bold">Education & Qualifications</h2>
-
           <p className="text-gray-500 mt-1">
             Manage your education and qualifications.
           </p>
@@ -225,8 +191,6 @@ export default function EducationPage() {
         </button>
       </div>
 
-      {/* Add Form */}
-
       {showAddForm && (
         <form
           onSubmit={handleCreateEducation}
@@ -245,8 +209,6 @@ export default function EducationPage() {
         </form>
       )}
 
-      {/* Education List */}
-
       {education.length === 0 ? (
         <div className="border border-white/10 rounded-2xl p-12 text-center">
           <p className="text-gray-500">No education entries yet.</p>
@@ -257,38 +219,29 @@ export default function EducationPage() {
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left py-4 px-4 font-semibold text-gray-400">
-                  Degree
-                </th>
-
-                <th className="text-left py-4 px-4 font-semibold text-gray-400">
                   Institution
                 </th>
-
                 <th className="text-left py-4 px-4 font-semibold text-gray-400">
-                  Year
+                  Degree
                 </th>
-
                 <th className="text-left py-4 px-4 font-semibold text-gray-400">
-                  Grade
+                  Field
                 </th>
-
+                <th className="text-left py-4 px-4 font-semibold text-gray-400">
+                  Years
+                </th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-400">
                   Actions
                 </th>
               </tr>
             </thead>
-
             <tbody>
               {education.map((item) => (
                 <tr key={item._id} className="border-b border-white/10 hover:bg-white/5 transition">
-                  <td className="py-4 px-4">{item.title}</td>
-
-                  <td className="py-4 px-4">{item.school}</td>
-
-                  <td className="py-4 px-4">{item.year}</td>
-
-                  <td className="py-4 px-4">{item.grade || "-"}</td>
-
+                  <td className="py-4 px-4">{item.institution}</td>
+                  <td className="py-4 px-4">{item.degree}</td>
+                  <td className="py-4 px-4">{item.field}</td>
+                  <td className="py-4 px-4">{item.startYear} {item.endYear ? `- ${item.endYear}` : "- Present"}</td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button
@@ -300,12 +253,9 @@ export default function EducationPage() {
                       >
                         <Edit2 size={16} />
                       </button>
-
                       <button
                         type="button"
-                        onClick={() =>
-                          handleDeleteEducation(item._id)
-                        }
+                        onClick={() => handleDeleteEducation(item._id)}
                         aria-label="Delete education"
                         title="Delete education"
                         className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition"
@@ -320,8 +270,6 @@ export default function EducationPage() {
           </table>
         </div>
       )}
-
-      {/* Edit Modal */}
 
       <AdminModal
         isOpen={editingEducation !== null}
@@ -359,58 +307,63 @@ export default function EducationPage() {
   );
 }
 
-// =============================================================
-// EDUCATION FORM FIELDS
-// =============================================================
-
 function EducationFormFields({ form, onChange }) {
   return (
     <div className="grid md:grid-cols-2 gap-5">
-      {/* Degree/Title */}
-
       <Input
-        label="Degree/Title"
-        name="title"
-        value={form.title}
-        onChange={onChange}
-        placeholder="Bachelor of Science"
-        required
-      />
-
-      {/* Institution */}
-
-      <Input
-        label="Institution/School"
-        name="school"
-        value={form.school}
+        label="Institution"
+        name="institution"
+        value={form.institution}
         onChange={onChange}
         placeholder="University of Example"
         required
       />
 
-      {/* Year */}
-
       <Input
-        label="Year"
-        name="year"
-        type="number"
-        value={form.year}
+        label="Degree"
+        name="degree"
+        value={form.degree}
         onChange={onChange}
-        placeholder="2023"
+        placeholder="Bachelor of Science"
         required
       />
 
-      {/* Grade */}
-
       <Input
-        label="Grade/GPA (Optional)"
-        name="grade"
-        value={form.grade}
+        label="Field of Study"
+        name="field"
+        value={form.field}
         onChange={onChange}
-        placeholder="3.8 / 4.0"
+        placeholder="Computer Science"
+        required
       />
 
-      {/* Description */}
+      <Input
+        label="Start Year"
+        name="startYear"
+        type="number"
+        value={form.startYear}
+        onChange={onChange}
+        placeholder="2020"
+        required
+      />
+
+      <Input
+        label="End Year (Optional)"
+        name="endYear"
+        type="number"
+        value={form.endYear}
+        onChange={onChange}
+        placeholder="2024"
+      />
+
+      <Input
+        label="Order"
+        name="order"
+        type="number"
+        value={form.order}
+        onChange={onChange}
+        placeholder="0"
+      />
 
       <div className="md:col-span-2">
         <label className="block text-sm text-gray-400 mb-2">
@@ -429,10 +382,6 @@ function EducationFormFields({ form, onChange }) {
     </div>
   );
 }
-
-// =============================================================
-// INPUT COMPONENT
-// =============================================================
 
 function Input({
   label,

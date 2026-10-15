@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
-  getProjects,
-  deleteProject,
-  getEducation,
+  getAdminProjects,
+  deleteAdminProject,
+  getAdminEducation,
   getMessages,
-} from "../../services/api";
+} from "../../services/adminService";
+import { parseErrorMessage } from "../../utils/adminHelpers";
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
@@ -32,8 +33,8 @@ export default function DashboardPage() {
       setLoading(true);
 
       const [projectsData, educationData, messagesData] = await Promise.all([
-        getProjects(),
-        getEducation().catch(() => []), // Education endpoint may not exist yet
+        getAdminProjects(),
+        getAdminEducation().catch(() => []),
         getMessages().catch(() => []),
       ]);
 
@@ -42,7 +43,7 @@ export default function DashboardPage() {
       setMessages(messagesData || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      toast.error("Failed to load dashboard data");
+      toast.error(parseErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export default function DashboardPage() {
     if (!confirmDelete) return;
 
     try {
-      await deleteProject(id);
+      await deleteAdminProject(id);
       toast.success("Project deleted");
       fetchData();
     } catch (error) {
@@ -85,13 +86,6 @@ export default function DashboardPage() {
     );
   }
 
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem("user"));
-  } catch (error) {
-    user = null;
-  }
-
   return (
     <>
       {/* Welcome */}
@@ -99,7 +93,7 @@ export default function DashboardPage() {
       <div className="mb-10">
         <h2 className="text-3xl md:text-4xl font-bold">
           Welcome back,{" "}
-          <span className="text-blue-500">{user?.name || "Admin"}</span>
+          <span className="text-blue-500">Admin</span>
         </h2>
 
         <p className="text-gray-500 mt-2">

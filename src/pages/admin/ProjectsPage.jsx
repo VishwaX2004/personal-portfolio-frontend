@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, X, Edit2, ExternalLink, FolderKanban } from "lucide-react";
 import toast from "react-hot-toast";
 import {
-  getProjects,
-  createProject,
-  deleteProject,
-  updateProject,
-} from "../../services/api";
+  getAdminProjects,
+  createAdminProject,
+  deleteAdminProject,
+  updateAdminProject,
+} from "../../services/adminService";
 import AdminModal from "../../components/admin/AdminModal";
-import { validateProjectForm } from "../../utils/adminHelpers";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
@@ -29,14 +28,10 @@ export default function ProjectsPage() {
     status: "Completed",
   });
 
-  // =========================================================
-  // FETCH PROJECTS
-  // =========================================================
-
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const data = await getProjects();
+      const data = await getAdminProjects();
       setProjects(data || []);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -50,22 +45,13 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  // =========================================================
-  // HANDLE FORM INPUT
-  // =========================================================
-
   const handleProjectChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     setProjectForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
-
-  // =========================================================
-  // RESET FORM
-  // =========================================================
 
   const resetForm = () => {
     setProjectForm({
@@ -83,10 +69,6 @@ export default function ProjectsPage() {
     setEditingProject(null);
   };
 
-  // =========================================================
-  // OPEN EDIT MODAL
-  // =========================================================
-
   const openEditModal = (project) => {
     setEditingProject(project);
     setProjectForm({
@@ -103,17 +85,11 @@ export default function ProjectsPage() {
     });
   };
 
-  // =========================================================
-  // CREATE PROJECT
-  // =========================================================
-
   const handleCreateProject = async (e) => {
     e.preventDefault();
 
-    const errors = validateProjectForm(projectForm);
-
-    if (errors.length > 0) {
-      toast.error(errors[0]);
+    if (!projectForm.title || !projectForm.slug || !projectForm.description) {
+      toast.error("Please fill in required fields");
       return;
     }
 
@@ -126,31 +102,22 @@ export default function ProjectsPage() {
           .filter(Boolean),
       };
 
-      await createProject(projectData);
-
+      await createAdminProject(projectData);
       toast.success("Project added successfully!");
       resetForm();
       setShowAddForm(false);
       fetchProjects();
     } catch (error) {
       console.error(error);
-      toast.error(
-        error.response?.data?.message || "Failed to create project"
-      );
+      toast.error(error.response?.data?.message || "Failed to create project");
     }
   };
-
-  // =========================================================
-  // UPDATE PROJECT
-  // =========================================================
 
   const handleUpdateProject = async (e) => {
     e.preventDefault();
 
-    const errors = validateProjectForm(projectForm);
-
-    if (errors.length > 0) {
-      toast.error(errors[0]);
+    if (!projectForm.title || !projectForm.slug || !projectForm.description) {
+      toast.error("Please fill in required fields");
       return;
     }
 
@@ -163,23 +130,16 @@ export default function ProjectsPage() {
           .filter(Boolean),
       };
 
-      await updateProject(editingProject._id, projectData);
-
+      await updateAdminProject(editingProject._id, projectData);
       toast.success("Project updated successfully!");
       resetForm();
       setEditingProject(null);
       fetchProjects();
     } catch (error) {
       console.error(error);
-      toast.error(
-        error.response?.data?.message || "Failed to update project"
-      );
+      toast.error(error.response?.data?.message || "Failed to update project");
     }
   };
-
-  // =========================================================
-  // DELETE PROJECT
-  // =========================================================
 
   const handleDeleteProject = async (id) => {
     const confirmDelete = window.confirm(
@@ -189,7 +149,7 @@ export default function ProjectsPage() {
     if (!confirmDelete) return;
 
     try {
-      await deleteProject(id);
+      await deleteAdminProject(id);
       toast.success("Project deleted");
       fetchProjects();
     } catch (error) {
@@ -197,10 +157,6 @@ export default function ProjectsPage() {
       toast.error("Failed to delete project");
     }
   };
-
-  // =========================================================
-  // LOADING
-  // =========================================================
 
   if (loading) {
     return (
@@ -212,12 +168,9 @@ export default function ProjectsPage() {
 
   return (
     <>
-      {/* Header */}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
         <div>
           <h2 className="text-2xl font-bold">Manage Projects</h2>
-
           <p className="text-gray-500 mt-1">
             Add and manage your portfolio projects.
           </p>
@@ -245,8 +198,6 @@ export default function ProjectsPage() {
         </button>
       </div>
 
-      {/* Add Project Form */}
-
       {showAddForm && (
         <form
           onSubmit={handleCreateProject}
@@ -268,8 +219,6 @@ export default function ProjectsPage() {
         </form>
       )}
 
-      {/* Project List */}
-
       {projects.length === 0 ? (
         <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white/[0.03] border border-white/10 rounded-2xl">
           <FolderKanban size={48} className="text-gray-700 mb-3" />
@@ -289,8 +238,6 @@ export default function ProjectsPage() {
           ))}
         </div>
       )}
-
-      {/* Edit Modal */}
 
       <AdminModal
         isOpen={editingProject !== null}
@@ -331,15 +278,9 @@ export default function ProjectsPage() {
   );
 }
 
-// =============================================================
-// PROJECT FORM FIELDS
-// =============================================================
-
 function ProjectFormFields({ form, onChange }) {
   return (
     <div className="grid md:grid-cols-2 gap-5">
-      {/* Title */}
-
       <Input
         label="Project Title"
         name="title"
@@ -348,8 +289,6 @@ function ProjectFormFields({ form, onChange }) {
         placeholder="Metal Garage"
         required
       />
-
-      {/* Slug */}
 
       <Input
         label="Slug"
@@ -360,8 +299,6 @@ function ProjectFormFields({ form, onChange }) {
         required
       />
 
-      {/* Category */}
-
       <Input
         label="Category"
         name="category"
@@ -370,8 +307,6 @@ function ProjectFormFields({ form, onChange }) {
         placeholder="MERN Stack"
       />
 
-      {/* Image */}
-
       <Input
         label="Image URL"
         name="image"
@@ -379,8 +314,6 @@ function ProjectFormFields({ form, onChange }) {
         onChange={onChange}
         placeholder="/images/projects/project.jpg"
       />
-
-      {/* Technologies */}
 
       <div className="md:col-span-2">
         <Input
@@ -393,8 +326,6 @@ function ProjectFormFields({ form, onChange }) {
 
         <p className="text-xs text-gray-600 mt-2">Separate with commas.</p>
       </div>
-
-      {/* Description */}
 
       <div className="md:col-span-2">
         <label className="block text-sm text-gray-400 mb-2">
@@ -412,8 +343,6 @@ function ProjectFormFields({ form, onChange }) {
         />
       </div>
 
-      {/* GitHub URL */}
-
       <Input
         label="GitHub URL"
         name="githubUrl"
@@ -422,8 +351,6 @@ function ProjectFormFields({ form, onChange }) {
         placeholder="https://github.com/..."
       />
 
-      {/* Live URL */}
-
       <Input
         label="Live URL"
         name="liveUrl"
@@ -431,8 +358,6 @@ function ProjectFormFields({ form, onChange }) {
         onChange={onChange}
         placeholder="https://..."
       />
-
-      {/* Status */}
 
       <div>
         <label className="block text-sm text-gray-400 mb-2">Status</label>
@@ -444,14 +369,10 @@ function ProjectFormFields({ form, onChange }) {
           className="w-full bg-black border border-white/10 rounded-xl p-3.5 outline-none focus:border-blue-500"
         >
           <option value="Completed">Completed</option>
-
           <option value="In Progress">In Progress</option>
-
           <option value="Active">Active</option>
         </select>
       </div>
-
-      {/* Featured */}
 
       <label className="flex items-center gap-3 cursor-pointer mt-8">
         <input
@@ -467,10 +388,6 @@ function ProjectFormFields({ form, onChange }) {
     </div>
   );
 }
-
-// =============================================================
-// INPUT COMPONENT
-// =============================================================
 
 function Input({
   label,
@@ -497,15 +414,9 @@ function Input({
   );
 }
 
-// =============================================================
-// PROJECT CARD
-// =============================================================
-
 function ProjectCard({ project, onEdit, onDelete }) {
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden group">
-      {/* Image */}
-
       <div className="aspect-video bg-black overflow-hidden">
         {project.image ? (
           <img
@@ -519,8 +430,6 @@ function ProjectCard({ project, onEdit, onDelete }) {
           </div>
         )}
       </div>
-
-      {/* Content */}
 
       <div className="p-5">
         <div className="flex justify-between gap-3">
@@ -543,8 +452,6 @@ function ProjectCard({ project, onEdit, onDelete }) {
           {project.description}
         </p>
 
-        {/* Technologies */}
-
         <div className="flex flex-wrap gap-1.5 mt-4">
           {project.technologies?.slice(0, 4).map((tech) => (
             <span
@@ -555,8 +462,6 @@ function ProjectCard({ project, onEdit, onDelete }) {
             </span>
           ))}
         </div>
-
-        {/* Footer */}
 
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/10">
           <span className="text-xs text-gray-600">{project.status}</span>
