@@ -84,12 +84,27 @@ export default function EducationPage() {
       return;
     }
 
+    // Validate year range (1900-2099)
+    const startYearNum = parseInt(formData.startYear, 10);
+    if (startYearNum < 1900 || startYearNum > 2099) {
+      toast.error("Start year must be between 1900 and 2099");
+      return;
+    }
+
+    if (formData.endYear) {
+      const endYearNum = parseInt(formData.endYear, 10);
+      if (endYearNum < 1900 || endYearNum > 2099) {
+        toast.error("End year must be between 1900 and 2099");
+        return;
+      }
+    }
+
     try {
       await createAdminEducation({
         institution: formData.institution,
         degree: formData.degree,
         field: formData.field,
-        startYear: parseInt(formData.startYear, 10),
+        startYear: startYearNum,
         endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
         description: formData.description,
         order: formData.order ? parseInt(formData.order, 10) : 0,
@@ -113,12 +128,27 @@ export default function EducationPage() {
       return;
     }
 
+    // Validate year range (1900-2099)
+    const startYearNum = parseInt(formData.startYear, 10);
+    if (startYearNum < 1900 || startYearNum > 2099) {
+      toast.error("Start year must be between 1900 and 2099");
+      return;
+    }
+
+    if (formData.endYear) {
+      const endYearNum = parseInt(formData.endYear, 10);
+      if (endYearNum < 1900 || endYearNum > 2099) {
+        toast.error("End year must be between 1900 and 2099");
+        return;
+      }
+    }
+
     try {
       await updateAdminEducation(editingEducation._id, {
         institution: formData.institution,
         degree: formData.degree,
         field: formData.field,
-        startYear: parseInt(formData.startYear, 10),
+        startYear: startYearNum,
         endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
         description: formData.description,
         order: formData.order ? parseInt(formData.order, 10) : 0,
@@ -275,8 +305,8 @@ export default function EducationPage() {
         isOpen={editingEducation !== null}
         title="Edit Education"
         onClose={() => {
-          setEditingEducation(null);
           resetForm();
+          setEditingEducation(null);
         }}
       >
         <form onSubmit={handleUpdateEducation} className="space-y-5">
@@ -293,8 +323,8 @@ export default function EducationPage() {
             <button
               type="button"
               onClick={() => {
-                setEditingEducation(null);
                 resetForm();
+                setEditingEducation(null);
               }}
               className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition"
             >

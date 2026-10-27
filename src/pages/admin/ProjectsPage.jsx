@@ -243,8 +243,8 @@ export default function ProjectsPage() {
         isOpen={editingProject !== null}
         title="Edit Project"
         onClose={() => {
-          setEditingProject(null);
           resetForm();
+          setEditingProject(null);
         }}
       >
         <form onSubmit={handleUpdateProject} className="space-y-5">
@@ -264,8 +264,8 @@ export default function ProjectsPage() {
             <button
               type="button"
               onClick={() => {
-                setEditingProject(null);
                 resetForm();
+                setEditingProject(null);
               }}
               className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition"
             >
