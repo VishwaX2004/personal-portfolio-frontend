@@ -1,20 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import axios from "axios";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
-
-if (!supabaseUrl) {
-    throw new Error("VITE_SUPABASE_URL is not configured.");
-}
-
-if (!supabaseAnonKey) {
-    throw new Error("VITE_SUPABASE_KEY is not configured.");
-}
-
-const supabase = createClient(
-    supabaseUrl,
-    supabaseAnonKey
-);
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default async function mediaUpload(file) {
 
@@ -49,79 +35,41 @@ export default async function mediaUpload(file) {
     }
 
     try {
+        console.log("Uploading image:", file.name);
 
-        // Clean original filename
-        const cleanFileName = file.name
-            .replace(/[^a-zA-Z0-9.-]/g, "_");
+        // Create FormData for multipart upload
+        const formData = new FormData();
+        formData.append("file", file);
 
-        // Unique filename
-        const timestamp = Date.now();
+        // Get token from localStorage
+        const token = localStorage.getItem("adminToken");
 
-        const randomString = Math.random()
-            .toString(36)
-            .substring(2, 10);
-
-        const fileName =
-            `${timestamp}-${randomString}-${cleanFileName}`;
-
-        console.log("Uploading image:", fileName);
-
-        const {
-            data,
-            error
-        } = await supabase.storage
-            .from("images")
-            .upload(
-                fileName,
-                file,
-                {
-                    cacheControl: "3600",
-                    contentType: file.type,
-                    upsert: false
-                }
-            );
-
-        if (error) {
-            console.error(
-                "Supabase Storage upload error:",
-                error
-            );
-
-            throw new Error(
-                error.message ||
-                "Failed to upload image to Supabase."
-            );
-        }
-
-        if (!data || !data.path) {
-            throw new Error(
-                "Upload succeeded but no file path was returned."
-            );
-        }
-
-        console.log(
-            "Uploaded file path:",
-            data.path
+        // Upload to backend endpoint
+        const response = await axios.post(
+            `${API_URL}/api/upload/image`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    ...(token && { Authorization: `Bearer ${token}` })
+                },
+                timeout: 30000, // 30 second timeout
+            }
         );
 
-        // Generate public URL
-        const {
-            data: publicUrlData
-        } = supabase.storage
-            .from("images")
-            .getPublicUrl(data.path);
+        if (!response.data.success) {
+            throw new Error(
+                response.data.message || "Upload failed"
+            );
+        }
 
-        if (
-            !publicUrlData ||
-            !publicUrlData.publicUrl
-        ) {
+        if (!response.data.publicUrl) {
             throw new Error(
                 "Could not generate public image URL."
             );
         }
 
-        const publicUrl =
-            publicUrlData.publicUrl;
+        const publicUrl = response.data.publicUrl;
 
         console.log(
             "Public image URL:",
@@ -134,7 +82,7 @@ export default async function mediaUpload(file) {
 
         console.error(
             "mediaUpload error:",
-            error
+            error.message
         );
 
         throw error;

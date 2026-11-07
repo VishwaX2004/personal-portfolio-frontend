@@ -28,22 +28,22 @@ API.interceptors.request.use(
 // ============================================================
 
 export const getEducation = async () => {
-  const response = await API.get("/qualifications");
+  const response = await API.get("/api/education");
   return response.data;
 };
 
 export const createEducation = async (data) => {
-  const response = await API.post("/qualifications", data);
+  const response = await API.post("/api/education", data);
   return response.data;
 };
 
 export const updateEducation = async (id, data) => {
-  const response = await API.put(`/qualifications/${id}`, data);
+  const response = await API.put(`/api/education/${id}`, data);
   return response.data;
 };
 
 export const deleteEducation = async (id) => {
-  const response = await API.delete(`/qualifications/${id}`);
+  const response = await API.delete(`/api/education/${id}`);
   return response.data;
 };
 
@@ -52,22 +52,22 @@ export const deleteEducation = async (id) => {
 // ============================================================
 
 export const getProjects = async () => {
-  const response = await API.get("/projects");
+  const response = await API.get("/api/projects");
   return response.data;
 };
 
 export const createProject = async (data) => {
-  const response = await API.post("/projects", data);
+  const response = await API.post("/api/projects", data);
   return response.data;
 };
 
 export const updateProject = async (id, data) => {
-  const response = await API.put(`/projects/${id}`, data);
+  const response = await API.put(`/api/projects/${id}`, data);
   return response.data;
 };
 
 export const deleteProject = async (id) => {
-  const response = await API.delete(`/projects/${id}`);
+  const response = await API.delete(`/api/projects/${id}`);
   return response.data;
 };
 
@@ -76,12 +76,12 @@ export const deleteProject = async (id) => {
 // ============================================================
 
 export const getMessages = async () => {
-  const response = await API.get("/messages");
+  const response = await API.get("/api/messages");
   return response.data;
 };
 
 export const deleteMessage = async (id) => {
-  const response = await API.delete(`/messages/${id}`);
+  const response = await API.delete(`/api/messages/${id}`);
   return response.data;
 };
 

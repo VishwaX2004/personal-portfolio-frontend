@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
-import API from "../services/api";
+import { getProjects } from "../services/api";
 import ProjectCard from "../components/projectCard";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
 
@@ -15,12 +15,12 @@ export default function ProjectPage() {
   const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
-    API.get("/projects")
-      .then((res) => {
-        setProjects(res.data || []);
+    getProjects()
+      .then((data) => {
+        setProjects(data || []);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Failed to fetch projects:", err);
       })
       .finally(() => {
         setLoading(false);

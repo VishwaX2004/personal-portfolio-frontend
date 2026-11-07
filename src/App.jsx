@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
 import ScrollToTop from "./components/scrollToTop";
+import PageTransition from "./components/PageTransition";
 import Login from "./pages/login";
 import ProjectDetails from "./pages/projectDetails";
 import ProjectPage from "./pages/projectPage";
@@ -16,82 +18,104 @@ import MessagesPage from "./pages/admin/MessagesPage";
 function App() {
   return (
     <>
-      {/* Handle page and hash scrolling */}
+      {/* Handle page and hash scrolling - only for user pages */}
       <ScrollToTop />
 
-      <Routes>
+      <AnimatePresence mode="wait">
+        <Routes>
 
-        {/* =====================================================
-            PUBLIC PAGES
-        ====================================================== */}
-
-        <Route
-          path="/"
-          element={<HomePage />}
-        />
-
-        <Route
-          path="/projects"
-          element={<ProjectPage />}
-        />
-
-        <Route
-          path="/projects/:id"
-          element={<ProjectDetails />}
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/admin/login"
-          element={<AdminLoginPage />}
-        />
-
-
-        {/* =====================================================
-            PROTECTED ADMIN ROUTES
-        ====================================================== */}
-
-        <Route element={<AdminRoute />}>
+          {/* =====================================================
+              PUBLIC PAGES (with smooth transitions & scroll to top)
+          ====================================================== */}
 
           <Route
-            path="/admin"
-            element={<AdminLayout />}
-          >
+            path="/"
+            element={
+              <PageTransition>
+                <HomePage />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/projects"
+            element={
+              <PageTransition>
+                <ProjectPage />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/projects/:id"
+            element={
+              <PageTransition>
+                <ProjectDetails />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/login"
+            element={
+              <PageTransition>
+                <Login />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/admin/login"
+            element={
+              <PageTransition>
+                <AdminLoginPage />
+              </PageTransition>
+            }
+          />
+
+
+          {/* =====================================================
+              PROTECTED ADMIN ROUTES (no transitions, no scroll to top)
+          ====================================================== */}
+
+          <Route element={<AdminRoute />}>
 
             <Route
-              index
-              element={<Navigate to="/admin/dashboard" replace />}
-            />
+              path="/admin"
+              element={<AdminLayout />}
+            >
 
-            <Route
-              path="dashboard"
-              element={<DashboardPage />}
-            />
+              <Route
+                index
+                element={<Navigate to="/admin/dashboard" replace />}
+              />
 
-            <Route
-              path="projects"
-              element={<ProjectsPage />}
-            />
+              <Route
+                path="dashboard"
+                element={<DashboardPage />}
+              />
 
-            <Route
-              path="education"
-              element={<EducationPage />}
-            />
+              <Route
+                path="projects"
+                element={<ProjectsPage />}
+              />
 
-            <Route
-              path="messages"
-              element={<MessagesPage />}
-            />
+              <Route
+                path="education"
+                element={<EducationPage />}
+              />
+
+              <Route
+                path="messages"
+                element={<MessagesPage />}
+              />
+
+            </Route>
 
           </Route>
 
-        </Route>
-
-      </Routes>
+        </Routes>
+      </AnimatePresence>
     </>
   );
 }

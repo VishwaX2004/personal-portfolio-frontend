@@ -1,7 +1,7 @@
 import { ExternalLink, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function ProjectCard({ project, onSelectProject, index = 0 }) {
+export default function ProjectCard({ project, onSelectProject, index = 0, isLarge = false }) {
   // Use coverImage if available, otherwise fall back to image, then to first image in array
   const coverImage =
     project.coverImage || project.image || project.images?.[0] || "";
@@ -17,7 +17,7 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
       },
     },
     hover: {
-      y: -8,
+      y: -6,
       transition: {
         duration: 0.3,
       },
@@ -49,23 +49,25 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
       animate="animate"
       whileHover="hover"
       onClick={handleClick}
-      className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden hover:border-[#6c63ff]/40 transition-all duration-300 cursor-pointer"
+      className={`group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-xl overflow-hidden hover:border-[#6c63ff]/60 hover:shadow-lg hover:shadow-[#6c63ff]/20 transition-all duration-300 cursor-pointer h-full flex flex-col ${
+        isLarge ? "lg:rounded-2xl" : ""
+      }`}
     >
       {/* IMAGE - WITH ZOOM AND OVERLAY */}
-      <div className="aspect-video overflow-hidden bg-black relative">
+      <div className={`overflow-hidden bg-black relative ${isLarge ? "aspect-square lg:aspect-video" : "aspect-video"}`}>
         {coverImage ? (
           <>
             <motion.img
               src={coverImage}
               alt={project.title}
               className="w-full h-full object-cover"
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.12 }}
               transition={{ duration: 0.5 }}
             />
 
             {/* Gradient Overlay */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
               initial={{ opacity: 0 }}
               whileHover={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -74,14 +76,12 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
             {/* View Details Badge */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                initial={{ scale: 0.8 }}
-                whileHover={{ scale: 1 }}
-                className="px-4 py-2 bg-[#6c63ff] rounded-lg font-semibold text-white"
+                className="px-4 py-2 bg-gradient-to-r from-[#6c63ff] to-[#5a52d5] rounded-lg font-semibold text-white text-sm hover:shadow-lg hover:shadow-[#6c63ff]/50"
               >
                 View Details
               </motion.div>
@@ -95,14 +95,14 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
 
         {/* Status Badge */}
         {project.status && (
-          <div className="absolute top-4 left-4">
+          <div className="absolute top-3 left-3">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md ${
                 project.status === "completed"
-                  ? "bg-green-500/30 text-green-200"
+                  ? "bg-green-500/40 text-green-100 border border-green-400/50"
                   : project.status === "in-progress"
-                  ? "bg-yellow-500/30 text-yellow-200"
-                  : "bg-gray-500/30 text-gray-200"
+                  ? "bg-yellow-500/40 text-yellow-100 border border-yellow-400/50"
+                  : "bg-gray-500/40 text-gray-100 border border-gray-400/50"
               }`}
             >
               {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
@@ -112,8 +112,8 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
 
         {/* Featured Badge */}
         {project.featured && (
-          <div className="absolute top-4 right-4">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/30 text-orange-200 backdrop-blur-sm">
+          <div className="absolute top-3 right-3">
+            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-500/40 text-orange-100 backdrop-blur-md border border-orange-400/50">
               ⭐ Featured
             </span>
           </div>
@@ -121,37 +121,40 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
       </div>
 
       {/* CONTENT */}
-      <div className="p-6">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
+        <div className="flex justify-between items-start gap-3 mb-2">
+          <div className="flex-1 min-w-0">
             <motion.p
-              className="text-[#6c63ff] text-sm font-medium"
+              className="text-[#6c63ff] text-xs font-semibold uppercase tracking-wider"
               initial={{ opacity: 0.7 }}
               whileHover={{ opacity: 1 }}
             >
               {project.category}
             </motion.p>
 
-            <motion.h3 className="text-2xl font-semibold mt-2 text-white group-hover:text-[#6c63ff] transition-colors duration-300">
+            <motion.h3 className={`font-bold mt-1.5 text-white group-hover:text-[#6c63ff] transition-colors duration-300 line-clamp-2 ${
+              isLarge ? "text-xl md:text-2xl" : "text-lg md:text-xl"
+            }`}>
               {project.title}
             </motion.h3>
           </div>
 
           <motion.div
-            whileHover={{ x: 4, y: -4 }}
+            whileHover={{ x: 3, y: -3 }}
             transition={{ duration: 0.3 }}
+            className="flex-shrink-0"
           >
             <ArrowUpRight
-              size={22}
-              className="flex-shrink-0 text-gray-500 group-hover:text-[#6c63ff] transition-colors duration-300"
+              size={18}
+              className="text-gray-500 group-hover:text-[#6c63ff] transition-colors duration-300"
             />
           </motion.div>
         </div>
 
         {/* Description */}
         <motion.p
-          className="text-gray-400 mt-4 leading-relaxed line-clamp-2 group-hover:line-clamp-3 transition-all duration-300"
+          className="text-gray-400 text-sm leading-relaxed line-clamp-2 group-hover:line-clamp-3 transition-all duration-300 mb-3 flex-1"
           initial={{ opacity: 0.8 }}
           whileHover={{ opacity: 1 }}
         >
@@ -159,35 +162,35 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
         </motion.p>
 
         {/* TECHNOLOGIES */}
-        <motion.div className="flex flex-wrap gap-2 mt-5">
-          {project.technologies?.slice(0, 4).map((tech, idx) => (
+        <motion.div className="flex flex-wrap gap-1.5 mb-4">
+          {project.technologies?.slice(0, isLarge ? 5 : 3).map((tech, idx) => (
             <motion.span
               key={tech}
               custom={idx}
               variants={techVariants}
               initial="initial"
               animate="animate"
-              className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-[#6c63ff]/20 to-[#6c63ff]/10 border border-[#6c63ff]/30 text-[#a89bff] group-hover:bg-gradient-to-r group-hover:from-[#6c63ff]/40 group-hover:to-[#6c63ff]/20 group-hover:border-[#6c63ff]/50 transition-all duration-300 hover:scale-105 transform"
+              className="text-xs px-2.5 py-1 rounded-full bg-gradient-to-r from-[#6c63ff]/25 to-[#6c63ff]/10 border border-[#6c63ff]/40 text-[#c5bfff] group-hover:from-[#6c63ff]/50 group-hover:to-[#6c63ff]/30 transition-all duration-300"
             >
               {tech}
             </motion.span>
           ))}
-          {project.technologies && project.technologies.length > 4 && (
+          {project.technologies && project.technologies.length > (isLarge ? 5 : 3) && (
             <motion.span
-              custom={4}
+              custom={isLarge ? 5 : 3}
               variants={techVariants}
               initial="initial"
               animate="animate"
-              className="text-xs px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-gray-300 group-hover:bg-white/20 transition-all duration-300"
+              className="text-xs px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-gray-300 group-hover:bg-white/20"
             >
-              +{project.technologies.length - 4} more
+              +{project.technologies.length - (isLarge ? 5 : 3)}
             </motion.span>
           )}
         </motion.div>
 
         {/* PROJECT LINKS */}
         <motion.div
-          className="flex flex-wrap gap-3 mt-6"
+          className="flex flex-wrap gap-2 mt-auto"
           initial={{ opacity: 0.7 }}
           whileHover={{ opacity: 1 }}
         >
@@ -200,11 +203,11 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
               onClick={(e) => e.stopPropagation()}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/10"
+              className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition px-2.5 py-1.5 rounded-lg hover:bg-white/10 border border-transparent hover:border-white/20"
             >
               <svg
-                width="17"
-                height="17"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -224,10 +227,10 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
               onClick={(e) => e.stopPropagation()}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 text-sm text-gray-300 hover:text-[#6c63ff] transition px-3 py-1.5 rounded-lg hover:bg-[#6c63ff]/10"
+              className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-[#6c63ff] transition px-2.5 py-1.5 rounded-lg hover:bg-[#6c63ff]/10 border border-transparent hover:border-[#6c63ff]/30"
             >
-              <ExternalLink size={16} />
-              Live Demo
+              <ExternalLink size={14} />
+              Live
             </motion.a>
           )}
         </motion.div>
