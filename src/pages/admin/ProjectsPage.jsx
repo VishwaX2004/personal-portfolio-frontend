@@ -1,36 +1,18 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, X, Edit2, ExternalLink, FolderKanban } from "lucide-react";
+import { Plus, Trash2, Edit2, ExternalLink, FolderKanban } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 import {
   getAdminProjects,
-  createAdminProject,
   deleteAdminProject,
-  updateAdminProject,
 } from "../../services/adminService";
-import AdminModal from "../../components/admin/AdminModal";
-import SupabaseUploader from "../../components/SupabaseUploader";
+import ProjectFormModal from "../../components/admin/ProjectFormModal";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-  const [uploadedImages, setUploadedImages] = useState([]);
-
-  const [projectForm, setProjectForm] = useState({
-    title: "",
-    slug: "",
-    description: "",
-    image: "",
-    images: [],
-    category: "MERN Stack",
-    technologies: "",
-    githubUrl: "",
-    liveUrl: "",
-    projectLink: "",
-    featured: false,
-    status: "Completed",
-  });
 
   const fetchProjects = async () => {
     try {
@@ -49,120 +31,6 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  const handleProjectChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setProjectForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const resetForm = () => {
-    setProjectForm({
-      title: "",
-      slug: "",
-      description: "",
-      image: "",
-      images: [],
-      category: "MERN Stack",
-      technologies: "",
-      githubUrl: "",
-      liveUrl: "",
-      projectLink: "",
-      featured: false,
-      status: "Completed",
-    });
-    setUploadedImages([]);
-    setEditingProject(null);
-  };
-
-  const openEditModal = (project) => {
-    setEditingProject(project);
-    setUploadedImages(project.images || []);
-    setProjectForm({
-      title: project.title,
-      slug: project.slug,
-      description: project.description,
-      image: project.image,
-      images: project.images || [],
-      category: project.category,
-      technologies: project.technologies?.join(", ") || "",
-      githubUrl: project.githubUrl || "",
-      liveUrl: project.liveUrl || "",
-      projectLink: project.projectLink || "",
-      featured: project.featured || false,
-      status: project.status || "Completed",
-    });
-  };
-
-  const handleCreateProject = async (e) => {
-    e.preventDefault();
-
-    if (!projectForm.title || !projectForm.slug || !projectForm.description) {
-      toast.error("Please fill in required fields");
-      return;
-    }
-
-    if (uploadedImages.length === 0) {
-      toast.error("Please upload at least one image");
-      return;
-    }
-
-    try {
-      const projectData = {
-        ...projectForm,
-        images: uploadedImages,
-        technologies: projectForm.technologies
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-      };
-
-      await createAdminProject(projectData);
-      toast.success("Project added successfully!");
-      resetForm();
-      setShowAddForm(false);
-      fetchProjects();
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to create project");
-    }
-  };
-
-  const handleUpdateProject = async (e) => {
-    e.preventDefault();
-
-    if (!projectForm.title || !projectForm.slug || !projectForm.description) {
-      toast.error("Please fill in required fields");
-      return;
-    }
-
-    if (uploadedImages.length === 0) {
-      toast.error("Please ensure at least one image is selected");
-      return;
-    }
-
-    try {
-      const projectData = {
-        ...projectForm,
-        images: uploadedImages,
-        technologies: projectForm.technologies
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-      };
-
-      await updateAdminProject(editingProject._id, projectData);
-      toast.success("Project updated successfully!");
-      resetForm();
-      setEditingProject(null);
-      fetchProjects();
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to update project");
-    }
-  };
-
   const handleDeleteProject = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this project?"
@@ -180,338 +48,224 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleOpenForm = (project = null) => {
+    setEditingProject(project);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingProject(null);
+  };
+
+  const handleFormSuccess = () => {
+    fetchProjects();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-[#6c63ff] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <>
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
         <div>
-          <h2 className="text-2xl font-bold">Manage Projects</h2>
-          <p className="text-gray-500 mt-1">
-            Add and manage your portfolio projects.
+          <h2 className="text-3xl font-bold">Manage Projects</h2>
+          <p className="text-gray-400 mt-2">
+            Create, edit, and manage your portfolio projects with images.
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="button"
-          onClick={() => {
-            setShowAddForm(!showAddForm);
-            if (showAddForm) resetForm();
-          }}
-          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center justify-center gap-2 transition"
+          onClick={() => handleOpenForm()}
+          className="px-6 py-3 bg-gradient-to-r from-[#6c63ff] to-[#5a52d5] hover:from-[#7a72ff] hover:to-[#6860e0] rounded-xl flex items-center justify-center gap-2 transition font-semibold text-white"
         >
-          {showAddForm ? (
-            <>
-              <X size={18} />
-              Close
-            </>
-          ) : (
-            <>
-              <Plus size={18} />
-              Add Project
-            </>
-          )}
-        </button>
+          <Plus size={20} />
+          Add New Project
+        </motion.button>
       </div>
 
-      {showAddForm && (
-        <form
-          onSubmit={handleCreateProject}
-          className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8 mb-8"
-        >
-          <h3 className="text-xl font-semibold mb-6">Add New Project</h3>
-
-          <ProjectFormFields
-            form={projectForm}
-            onChange={handleProjectChange}
-            onUploadComplete={setUploadedImages}
-            uploadedImages={uploadedImages}
-          />
-
-          <button
-            type="submit"
-            className="mt-7 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition"
-          >
-            Create Project
-          </button>
-        </form>
-      )}
-
+      {/* Projects Grid */}
       {projects.length === 0 ? (
-        <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white/[0.03] border border-white/10 rounded-2xl">
-          <FolderKanban size={48} className="text-gray-700 mb-3" />
-          <p className="text-gray-500 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-span-full flex flex-col items-center justify-center py-20 bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-2xl"
+        >
+          <FolderKanban size={48} className="text-gray-600 mb-4" />
+          <p className="text-gray-400 text-center mb-6">
             No projects yet. Add your first project to get started.
           </p>
-        </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleOpenForm()}
+            className="px-4 py-2 bg-[#6c63ff] hover:bg-[#5a52d5] rounded-lg text-white font-medium transition"
+          >
+            Create First Project
+          </motion.button>
+        </motion.div>
       ) : (
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {projects.map((project) => (
-            <ProjectCard
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid md:grid-cols-2 xl:grid-cols-3 gap-5"
+        >
+          {projects.map((project, index) => (
+            <AdminProjectCard
               key={project._id}
               project={project}
-              onEdit={openEditModal}
-              onDelete={handleDeleteProject}
+              index={index}
+              onEdit={() => handleOpenForm(project)}
+              onDelete={() => handleDeleteProject(project._id)}
             />
           ))}
-        </div>
+        </motion.div>
       )}
 
-      <AdminModal
-        isOpen={editingProject !== null}
-        title="Edit Project"
-        onClose={() => {
-          resetForm();
-          setEditingProject(null);
-        }}
-      >
-        <form onSubmit={handleUpdateProject} className="space-y-5">
-          <ProjectFormFields
-            form={projectForm}
-            onChange={handleProjectChange}
-            onUploadComplete={setUploadedImages}
-            uploadedImages={uploadedImages}
-          />
-
-          <div className="flex gap-3 pt-5">
-            <button
-              type="submit"
-              className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition"
-            >
-              Save Changes
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                resetForm();
-                setEditingProject(null);
-              }}
-              className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </AdminModal>
+      {/* Form Modal */}
+      <ProjectFormModal
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        project={editingProject}
+        onSuccess={handleFormSuccess}
+      />
     </>
   );
 }
 
-function ProjectFormFields({ form, onChange, onUploadComplete, uploadedImages }) {
+function AdminProjectCard({ project, index, onEdit, onDelete }) {
+  const coverImage =
+    project.coverImage || project.image || project.images?.[0] || "";
+
+  const containerVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        delay: index * 0.1,
+      },
+    },
+  };
+
   return (
-    <div className="grid md:grid-cols-2 gap-5">
-      {/* Image Uploader */}
-      <div className="md:col-span-2">
-        <label className="block text-sm text-gray-400 mb-3">
-          Project Images (Supabase)
-        </label>
-        <SupabaseUploader
-          onUploadComplete={onUploadComplete}
-          previewImages={uploadedImages}
-        />
-      </div>
-
-      <Input
-        label="Project Title"
-        name="title"
-        value={form.title}
-        onChange={onChange}
-        placeholder="Metal Garage"
-        required
-      />
-
-      <Input
-        label="Slug"
-        name="slug"
-        value={form.slug}
-        onChange={onChange}
-        placeholder="metal-garage"
-        required
-      />
-
-      <Input
-        label="Category"
-        name="category"
-        value={form.category}
-        onChange={onChange}
-        placeholder="MERN Stack"
-      />
-
-      <Input
-        label="Project Link"
-        name="projectLink"
-        value={form.projectLink}
-        onChange={onChange}
-        placeholder="https://..."
-      />
-
-      <div className="md:col-span-2">
-        <Input
-          label="Technologies"
-          name="technologies"
-          value={form.technologies}
-          onChange={onChange}
-          placeholder="React, Node.js, Express, MongoDB"
-        />
-
-        <p className="text-xs text-gray-600 mt-2">Separate with commas.</p>
-      </div>
-
-      <div className="md:col-span-2">
-        <label className="block text-sm text-gray-400 mb-2">
-          Description
-        </label>
-
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={onChange}
-          rows="5"
-          required
-          placeholder="Describe your project..."
-          className="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none focus:border-blue-500 transition resize-none"
-        />
-      </div>
-
-      <Input
-        label="GitHub URL"
-        name="githubUrl"
-        value={form.githubUrl}
-        onChange={onChange}
-        placeholder="https://github.com/..."
-      />
-
-      <Input
-        label="Live URL"
-        name="liveUrl"
-        value={form.liveUrl}
-        onChange={onChange}
-        placeholder="https://..."
-      />
-
-      <div>
-        <label className="block text-sm text-gray-400 mb-2">Status</label>
-
-        <select
-          name="status"
-          value={form.status}
-          onChange={onChange}
-          className="w-full bg-black border border-white/10 rounded-xl p-3.5 outline-none focus:border-blue-500"
-        >
-          <option value="Completed">Completed</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Active">Active</option>
-        </select>
-      </div>
-
-      <label className="flex items-center gap-3 cursor-pointer mt-8">
-        <input
-          type="checkbox"
-          name="featured"
-          checked={form.featured}
-          onChange={onChange}
-          className="w-4 h-4"
-        />
-
-        <span className="text-sm text-gray-300">Featured project</span>
-      </label>
-    </div>
-  );
-}
-
-function Input({
-  label,
-  name,
-  value,
-  onChange,
-  placeholder,
-  required = false,
-}) {
-  return (
-    <div>
-      <label className="block text-sm text-gray-400 mb-2">{label}</label>
-
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 outline-none focus:border-blue-500 transition"
-      />
-    </div>
-  );
-}
-
-function ProjectCard({ project, onEdit, onDelete }) {
-  return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden group">
-      <div className="aspect-video bg-black overflow-hidden">
-        {project.image ? (
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-          />
+    <motion.div
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+      whileHover={{ y: -4 }}
+      className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden hover:border-[#6c63ff]/40 transition-all"
+    >
+      {/* Image */}
+      <div className="aspect-video bg-black overflow-hidden relative">
+        {coverImage ? (
+          <>
+            <motion.img
+              src={coverImage}
+              alt={project.title}
+              className="w-full h-full object-cover"
+              whileHover={{ scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700">
             <FolderKanban size={35} />
           </div>
         )}
+
+        {/* Status Badge */}
+        {project.status && (
+          <div className="absolute top-3 left-3">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                project.status === "completed"
+                  ? "bg-green-500/30 text-green-200"
+                  : project.status === "in-progress"
+                  ? "bg-yellow-500/30 text-yellow-200"
+                  : "bg-gray-500/30 text-gray-200"
+              }`}
+            >
+              {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+            </span>
+          </div>
+        )}
+
+        {/* Featured Badge */}
+        {project.featured && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-orange-500/30 text-orange-200 backdrop-blur-sm">
+              ⭐ Featured
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* Content */}
       <div className="p-5">
-        <div className="flex justify-between gap-3">
-          <div>
-            <p className="text-blue-500 text-xs font-medium">
-              {project.category}
-            </p>
-
-            <h3 className="text-lg font-semibold mt-1">{project.title}</h3>
-          </div>
-
-          {project.featured && (
-            <span className="text-[10px] px-2 py-1 h-fit rounded-full bg-blue-500/10 text-blue-400">
-              FEATURED
-            </span>
-          )}
+        {/* Title & Category */}
+        <div>
+          <p className="text-[#6c63ff] text-xs font-medium uppercase tracking-wider">
+            {project.category}
+          </p>
+          <h3 className="text-lg font-semibold mt-2 text-white group-hover:text-[#6c63ff] transition">
+            {project.title}
+          </h3>
         </div>
 
-        <p className="text-gray-500 text-sm mt-3 line-clamp-2">
+        {/* Description */}
+        <p className="text-gray-400 text-sm mt-3 line-clamp-2">
           {project.description}
         </p>
 
+        {/* Technologies */}
         <div className="flex flex-wrap gap-1.5 mt-4">
-          {project.technologies?.slice(0, 4).map((tech) => (
+          {project.technologies?.slice(0, 3).map((tech) => (
             <span
               key={tech}
-              className="text-[10px] px-2 py-1 bg-white/5 rounded-md text-gray-400"
+              className="text-xs px-2 py-1 bg-[#6c63ff]/20 border border-[#6c63ff]/30 rounded-md text-[#a89bff]"
             >
               {tech}
             </span>
           ))}
+          {project.technologies && project.technologies.length > 3 && (
+            <span className="text-xs px-2 py-1 bg-white/10 rounded-md text-gray-400">
+              +{project.technologies.length - 3}
+            </span>
+          )}
         </div>
 
+        {/* Footer */}
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/10">
-          <span className="text-xs text-gray-600">{project.status}</span>
+          <span className="text-xs text-gray-500">
+            {project.images?.length || 0} image(s)
+          </span>
 
           <div className="flex items-center gap-1">
+            {/* GitHub Link */}
             {project.githubUrl && (
               <a
                 href={project.githubUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label="GitHub"
                 title="GitHub"
-                className="p-2 text-gray-500 hover:text-white transition"
+                className="p-2 text-gray-500 hover:text-white transition hover:bg-white/10 rounded-lg"
               >
                 <svg
                   width="16"
@@ -525,41 +279,43 @@ function ProjectCard({ project, onEdit, onDelete }) {
               </a>
             )}
 
+            {/* Live Link */}
             {project.liveUrl && (
               <a
                 href={project.liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label="Live project"
                 title="Live project"
-                className="p-2 text-gray-500 hover:text-white transition"
+                className="p-2 text-gray-500 hover:text-[#6c63ff] transition hover:bg-[#6c63ff]/10 rounded-lg"
               >
                 <ExternalLink size={16} />
               </a>
             )}
 
-            <button
-              type="button"
-              onClick={() => onEdit(project)}
-              aria-label="Edit project"
+            {/* Edit Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onEdit}
               title="Edit project"
-              className="p-2 text-gray-500 hover:text-blue-400 transition"
+              className="p-2 text-gray-500 hover:text-blue-400 transition hover:bg-blue-400/10 rounded-lg"
             >
               <Edit2 size={16} />
-            </button>
+            </motion.button>
 
-            <button
-              type="button"
-              onClick={() => onDelete(project._id)}
-              aria-label="Delete project"
+            {/* Delete Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onDelete}
               title="Delete project"
-              className="p-2 text-gray-500 hover:text-red-400 transition"
+              className="p-2 text-gray-500 hover:text-red-400 transition hover:bg-red-400/10 rounded-lg"
             >
               <Trash2 size={16} />
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

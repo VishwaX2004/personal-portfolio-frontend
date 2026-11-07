@@ -4,43 +4,60 @@
     {
       "id": 1,
       "severity": "HIGH",
-      "title": "Bucket Name Mismatch",
-      "problem": "Design specifies uploading to bucket 'images', but existing SupabaseUploader.jsx uses 'portfolio-projects'",
-      "location": "design.md Section 1 vs src/components/SupabaseUploader.jsx:11",
-      "fix": "Choose one bucket name: Option A (RECOMMENDED): Update design to use 'portfolio-projects'. Option B: Update SupabaseUploader.jsx to use 'images' and verify no other code references the old bucket."
+      "title": "Broken Supabase Key Reference in mediaUpload.jsx and SupabaseUploader.jsx",
+      "description": "The design references VITE_SUPABASE_ANON_KEY but .env contains VITE_SUPABASE_KEY. Both mediaUpload.jsx (line 3) and SupabaseUploader.jsx (line 7) attempt to use the non-existent VITE_SUPABASE_ANON_KEY environment variable, making these utilities non-functional.",
+      "location": ".env, src/utils/mediaUpload.jsx, src/components/SupabaseUploader.jsx",
+      "fix": "Choose one: (A) Rename VITE_SUPABASE_KEY to VITE_SUPABASE_ANON_KEY in .env (recommended), or (B) Update both utility files to use VITE_SUPABASE_KEY. Recommended: Option A for semantic clarity and Supabase standard naming."
     },
     {
       "id": 2,
       "severity": "HIGH",
-      "title": "Environment Variable Missing",
-      "problem": "Design says to add VITE_SUPABASE_ANON_KEY to .env, but it does not exist. Both mediaUpload.jsx and SupabaseUploader.jsx will fail at initialization because they read an undefined env variable.",
-      "location": ".env (missing VITE_SUPABASE_ANON_KEY) vs mediaUpload.jsx:2 and SupabaseUploader.jsx:8",
-      "fix": "Add VITE_SUPABASE_ANON_KEY to .env with the same value as VITE_SUPABASE_KEY: VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ndGFva2hhcXNsdmt6bGd0cXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyOTMyNzcsImV4cCI6MjEwNDg2OTI3N30.RSt6NSMuwA-8c9hEq1YE-VqQRQbk8Mnz15-uYDSNmAo"
+      "title": "Missing Specification: Technologies String-to-Array Transformation in ProjectFormModal",
+      "description": "The design states forms pass technologies as comma-separated strings to the API, but does not specify where the string-to-array transformation occurs for the new ProjectFormModal component. The backend expects technologies as an array [String]. Without explicit transformation, form submissions will fail schema validation.",
+      "location": "Design §2 (Submission Logic), ProjectFormModal.jsx (to be created), projectController.js backend",
+      "fix": "Add explicit specification to ProjectFormModal.jsx submission logic: convert technologies from comma-separated string to array before passing to API, matching the pattern in ProjectsPage.jsx lines 124-126. Example: technologies.split(',').map(item => item.trim()).filter(Boolean)"
     },
     {
       "id": 3,
-      "severity": "HIGH",
-      "title": "Status Enum Not Actually Updated",
-      "problem": "Design claims status enum was replaced with ['draft', 'published'], but backend/models/projects.js still has the old enum ['Active', 'Completed', 'In Progress']. Mongoose validation will reject any save with the new status values.",
-      "location": "design.md Section 3 vs backend/models/projects.js:64-72",
-      "fix": "Update backend/models/projects.js lines 64-72 to: status: { type: String, enum: ['draft', 'published'], default: 'draft' }. Then run a migration to update all existing projects: await Project.updateMany({ status: { $in: ['Active', 'Completed', 'In Progress'] } }, { $set: { status: 'published' } })"
+      "severity": "MEDIUM",
+      "title": "Missing Integration Details: ProjectDetailsModal Click Handlers Not Specified",
+      "description": "The design describes ProjectDetailsModal component and its integration with projectPage.jsx and projects.jsx, but does not specify how click events are wired. No detail provided for: (1) parent state management (selectedProject state), (2) click handler flow (does ProjectCard emit click? does parent wrap it?), (3) modal prop passing.",
+      "location": "Design §3 and §4, projectPage.jsx, projects.jsx, projectCard.jsx",
+      "fix": "Add detailed integration subsection specifying: (1) Parent component adds useState for selectedProject, (2) ProjectCard accepts onSelectProject prop and calls it on click, (3) ProjectDetailsModal rendered conditionally with isOpen={selectedProject !== null}, (4) Example: <ProjectCard ... onSelectProject={setSelectedProject} /> and <ProjectDetailsModal isOpen={selectedProject !== null} project={selectedProject} onClose={() => setSelectedProject(null)} />"
     },
     {
       "id": 4,
-      "severity": "HIGH",
-      "title": "Public Endpoint Does Not Filter by Status",
-      "problem": "Design Section 3 proposes filtering public /projects endpoint to only return status='published', but backend/controllers/projectController.js getProjects() function returns ALL projects unfiltered. Drafts will be visible to users.",
-      "location": "design.md Section 3 vs backend/controllers/projectController.js:3-15",
-      "fix": "Update backend/controllers/projectController.js lines 3-15 to add filter: const projects = await Project.find({ status: 'published' }).sort({ createdAt: -1 }). Also update getFeaturedProjects() to include status filter."
+      "severity": "MEDIUM",
+      "title": "Unverified Assumption: Public /api/projects Endpoint Filtering By Status",
+      "description": "The design notes 'if filtering needed (e.g., status: \"Completed\"), verify in projectController' but does not verify or resolve. Backend projectController.getProjects() returns all projects without filtering. Users will see projects marked 'In Progress' or other draft statuses alongside completed projects.",
+      "location": "Design §6 (Public Endpoints), backend projectController.js lines 5-20",
+      "fix": "Verify and document business rule: (A) Filter to status='Completed' only (stricter, hides drafts), (B) Filter to status='Completed' OR status='Active' (mixed), or (C) Show all (current). Recommendation: Option A. Update backend: const projects = await Project.find({ status: 'Completed' }).sort({ createdAt: -1 }). Document decision in design."
     },
     {
       "id": 5,
       "severity": "MEDIUM",
-      "title": "ImageUploader Component Reuse Ambiguity",
-      "problem": "Design proposes creating a new ImageUploader.jsx component, but SupabaseUploader.jsx already exists and provides all required functionality (batch upload, previews, progress bars, drag-and-drop). Design does not clarify whether to create a new component, reuse existing, or refactor existing.",
-      "location": "design.md Section 2 vs src/components/SupabaseUploader.jsx and src/pages/admin/ProjectsPage.jsx:8",
-      "fix": "Option A (RECOMMENDED): Reuse existing SupabaseUploader. Update design to remove 'File to Create: ImageUploader.jsx' and document that ProjectFormModal will integrate with SupabaseUploader. Option B: Create new ImageUploader as a wrapper/enhancement around SupabaseUploader and document the relationship."
+      "title": "Missing Dependency and Version Pinning: Framer Motion",
+      "description": "The design mandates Framer Motion for animations but package.json does not include it. Design §6 says 'Add framer-motion to package.json' but provides no pinned version (only conditional example '...or specific version, e.g., ^10.16.0'). Without a pinned version, builds may pick different major versions.",
+      "location": "Design §6 (package.json), package.json (frontend)",
+      "fix": "Add to package.json dependencies: \"framer-motion\": \"^10.16.0\" (pinned to major version 10). Update design to specify exact version: 'Framer Motion version 10.16.0 or later (^10.16.0)'. Run npm install after updating."
     }
+  ],
+  "verifiedAssumptions": [
+    "Backend Project model schema includes images: [String], coverImage: String, with pre-save hooks to auto-set coverImage",
+    "Admin routes /api/admin/projects exist and are protected by protectAdmin middleware",
+    "adminService.js provides createAdminProject(), updateAdminProject(), deleteAdminProject() methods",
+    "App.jsx routes include /admin/projects and AdminLayout structure",
+    "authContext.jsx provides useAuth() hook with isAdmin and user data",
+    "SupabaseUploader.jsx component exists and handles multi-image upload with cover badge",
+    "AdminModal.jsx component exists and provides modal wrapper",
+    "projectCard.jsx exists and uses coverImage fallback pattern (coverImage || image || images[0])",
+    "projectPage.jsx and projects.jsx (home section) exist and import ProjectCard"
+  ],
+  "unverifiedAssumptions": [
+    "VITE_SUPABASE_ANON_KEY exists in .env (it does not; only VITE_SUPABASE_KEY exists)",
+    "Public /api/projects endpoint filters by status (it does not; returns all projects)",
+    "Framer Motion will be added to package.json with pinned version (not done yet)",
+    "ProjectDetailsModal click handler integration is obvious to implementer (not specified in detail)"
   ],
   "reviewDoc": "d:/Devlopment/portfolio/frontend/.agents/tasks/projects-feature/design-review.md"
 }

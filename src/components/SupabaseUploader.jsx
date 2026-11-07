@@ -51,12 +51,17 @@ export default function SupabaseUploader({ onUploadComplete, previewImages = [] 
   const handleRemoveFile = (index) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     
-    // Clean up preview URL
-    if (previewUrls[index] && previewUrls[index].startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrls[index]);
+    // Clean up blob URL
+    const urlToRemove = previewUrls[index];
+    if (urlToRemove && urlToRemove.startsWith("blob:")) {
+      URL.revokeObjectURL(urlToRemove);
     }
 
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    setPreviewUrls(newUrls);
+    
+    // Update parent component with new URLs
+    onUploadComplete(newUrls.filter(url => !url.startsWith("blob:")));
   };
 
   // Upload files to Supabase
@@ -116,11 +121,13 @@ export default function SupabaseUploader({ onUploadComplete, previewImages = [] 
       onUploadComplete(uploadedUrls);
       toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
 
-      // Clear selected files
+      // Clear selected files and blob URLs
       setSelectedFiles([]);
       const blobUrls = previewUrls.filter((url) => url.startsWith("blob:"));
       blobUrls.forEach((url) => URL.revokeObjectURL(url));
-      setPreviewUrls(previewUrls.slice(-previewUrls.length + selectedFiles.length));
+      // Keep only the uploaded URLs (remove blob URLs)
+      const uploadedUrlsList = previewUrls.filter((url) => !url.startsWith("blob:"));
+      setPreviewUrls(uploadedUrlsList);
 
       setUploadProgress(0);
     } catch (error) {
