@@ -37,7 +37,7 @@ adminAPI.interceptors.response.use(
 
 export const loginAdmin = async (username, password) => {
   try {
-    const response = await adminAPI.post("/admin/login", {
+    const response = await adminAPI.post("/api/admin/login", {
       username,
       password,
     });
@@ -53,7 +53,7 @@ export const loginAdmin = async (username, password) => {
 
 export const getAdminProjects = async () => {
   try {
-    const response = await adminAPI.get("/admin/projects");
+    const response = await adminAPI.get("/api/admin/projects");
     return response.data;
   } catch (error) {
     throw error;
@@ -62,7 +62,7 @@ export const getAdminProjects = async () => {
 
 export const createAdminProject = async (data) => {
   try {
-    const response = await adminAPI.post("/admin/projects", data);
+    const response = await adminAPI.post("/api/admin/projects", data);
     return response.data;
   } catch (error) {
     throw error;
@@ -71,7 +71,7 @@ export const createAdminProject = async (data) => {
 
 export const updateAdminProject = async (id, data) => {
   try {
-    const response = await adminAPI.put(`/admin/projects/${id}`, data);
+    const response = await adminAPI.put(`/api/admin/projects/${id}`, data);
     return response.data;
   } catch (error) {
     throw error;
@@ -80,7 +80,7 @@ export const updateAdminProject = async (id, data) => {
 
 export const deleteAdminProject = async (id) => {
   try {
-    const response = await adminAPI.delete(`/admin/projects/${id}`);
+    const response = await adminAPI.delete(`/api/admin/projects/${id}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -93,7 +93,7 @@ export const deleteAdminProject = async (id) => {
 
 export const getAdminEducation = async () => {
   try {
-    const response = await adminAPI.get("/admin/education");
+    const response = await adminAPI.get("/api/admin/education");
     return response.data;
   } catch (error) {
     throw error;
@@ -102,7 +102,7 @@ export const getAdminEducation = async () => {
 
 export const createAdminEducation = async (data) => {
   try {
-    const response = await adminAPI.post("/admin/education", data);
+    const response = await adminAPI.post("/api/admin/education", data);
     return response.data;
   } catch (error) {
     throw error;
@@ -111,7 +111,7 @@ export const createAdminEducation = async (data) => {
 
 export const updateAdminEducation = async (id, data) => {
   try {
-    const response = await adminAPI.put(`/admin/education/${id}`, data);
+    const response = await adminAPI.put(`/api/admin/education/${id}`, data);
     return response.data;
   } catch (error) {
     throw error;
@@ -120,7 +120,7 @@ export const updateAdminEducation = async (id, data) => {
 
 export const deleteAdminEducation = async (id) => {
   try {
-    const response = await adminAPI.delete(`/admin/education/${id}`);
+    const response = await adminAPI.delete(`/api/admin/education/${id}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -133,7 +133,7 @@ export const deleteAdminEducation = async (id) => {
 
 export const getMessages = async () => {
   try {
-    const response = await adminAPI.get("/admin/messages");
+    const response = await adminAPI.get("/api/admin/messages");
     return response.data;
   } catch (error) {
     throw error;
@@ -142,7 +142,7 @@ export const getMessages = async () => {
 
 export const deleteMessage = async (id) => {
   try {
-    const response = await adminAPI.delete(`/admin/messages/${id}`);
+    const response = await adminAPI.delete(`/api/admin/messages/${id}`);
     return response.data;
   } catch (error) {
     throw error;

@@ -2,24 +2,36 @@ import {
   ExternalLink,
   ArrowUpRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function ProjectCard({ project }) {
+  // Use coverImage if available, otherwise fall back to image, then to first image in array
+  const coverImage = project.coverImage || project.image || (project.images?.[0] || "");
+
   return (
-    <div className="group bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-300">
+    <Link
+      to={`/projects/${project._id}`}
+      className="group bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/40 transition-all duration-300"
+    >
 
       {/* =====================================================
-          IMAGE
+          IMAGE - WITH ZOOM AND OVERLAY
       ====================================================== */}
 
-      <div className="aspect-video overflow-hidden bg-black">
+      <div className="aspect-video overflow-hidden bg-black relative">
 
-        {project.image ? (
+        {coverImage ? (
 
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-          />
+          <>
+            <img
+              src={coverImage}
+              alt={project.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            />
+            
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          </>
 
         ) : (
 
@@ -48,7 +60,7 @@ export default function ProjectCard({ project }) {
               {project.category}
             </p>
 
-            <h3 className="text-2xl font-semibold mt-2 text-white">
+            <h3 className="text-2xl font-semibold mt-2 text-white group-hover:text-blue-400 transition-colors duration-300">
               {project.title}
             </h3>
 
@@ -65,7 +77,7 @@ export default function ProjectCard({ project }) {
 
         {/* Description */}
 
-        <p className="text-gray-400 mt-4 leading-relaxed line-clamp-3">
+        <p className="text-gray-400 mt-4 leading-relaxed line-clamp-2 group-hover:line-clamp-3 transition-all duration-300">
           {project.description}
         </p>
 
@@ -76,15 +88,18 @@ export default function ProjectCard({ project }) {
 
         <div className="flex flex-wrap gap-2 mt-5">
 
-          {project.technologies?.map((tech) => (
-
+          {project.technologies?.map((tech, idx) => (
             <span
               key={tech}
-              className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-gray-300"
+              className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 group-hover:bg-blue-500/20 group-hover:border-blue-500/50 transition-all duration-300 hover:scale-105 transform"
+              style={{
+                animationDelay: `${idx * 30}ms`,
+                animation: 'fadeInUp 0.3s ease-out forwards',
+                opacity: 0,
+              }}
             >
               {tech}
             </span>
-
           ))}
 
         </div>
@@ -104,6 +119,7 @@ export default function ProjectCard({ project }) {
               href={project.githubUrl}
               target="_blank"
               rel="noreferrer"
+              onClick={(e) => e.preventDefault()}
               className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition"
             >
 
@@ -136,6 +152,7 @@ export default function ProjectCard({ project }) {
               href={project.liveUrl}
               target="_blank"
               rel="noreferrer"
+              onClick={(e) => e.preventDefault()}
               className="flex items-center gap-2 text-sm text-gray-300 hover:text-blue-500 transition"
             >
 
@@ -151,7 +168,24 @@ export default function ProjectCard({ project }) {
 
       </div>
 
-    </div>
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .group:hover span {
+          animation: fadeInUp 0.3s ease-out forwards !important;
+        }
+      `}</style>
+
+    </Link>
   );
 }
 

@@ -1,0 +1,46 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "HIGH",
+      "title": "Bucket Name Mismatch",
+      "problem": "Design specifies uploading to bucket 'images', but existing SupabaseUploader.jsx uses 'portfolio-projects'",
+      "location": "design.md Section 1 vs src/components/SupabaseUploader.jsx:11",
+      "fix": "Choose one bucket name: Option A (RECOMMENDED): Update design to use 'portfolio-projects'. Option B: Update SupabaseUploader.jsx to use 'images' and verify no other code references the old bucket."
+    },
+    {
+      "id": 2,
+      "severity": "HIGH",
+      "title": "Environment Variable Missing",
+      "problem": "Design says to add VITE_SUPABASE_ANON_KEY to .env, but it does not exist. Both mediaUpload.jsx and SupabaseUploader.jsx will fail at initialization because they read an undefined env variable.",
+      "location": ".env (missing VITE_SUPABASE_ANON_KEY) vs mediaUpload.jsx:2 and SupabaseUploader.jsx:8",
+      "fix": "Add VITE_SUPABASE_ANON_KEY to .env with the same value as VITE_SUPABASE_KEY: VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ndGFva2hhcXNsdmt6bGd0cXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyOTMyNzcsImV4cCI6MjEwNDg2OTI3N30.RSt6NSMuwA-8c9hEq1YE-VqQRQbk8Mnz15-uYDSNmAo"
+    },
+    {
+      "id": 3,
+      "severity": "HIGH",
+      "title": "Status Enum Not Actually Updated",
+      "problem": "Design claims status enum was replaced with ['draft', 'published'], but backend/models/projects.js still has the old enum ['Active', 'Completed', 'In Progress']. Mongoose validation will reject any save with the new status values.",
+      "location": "design.md Section 3 vs backend/models/projects.js:64-72",
+      "fix": "Update backend/models/projects.js lines 64-72 to: status: { type: String, enum: ['draft', 'published'], default: 'draft' }. Then run a migration to update all existing projects: await Project.updateMany({ status: { $in: ['Active', 'Completed', 'In Progress'] } }, { $set: { status: 'published' } })"
+    },
+    {
+      "id": 4,
+      "severity": "HIGH",
+      "title": "Public Endpoint Does Not Filter by Status",
+      "problem": "Design Section 3 proposes filtering public /projects endpoint to only return status='published', but backend/controllers/projectController.js getProjects() function returns ALL projects unfiltered. Drafts will be visible to users.",
+      "location": "design.md Section 3 vs backend/controllers/projectController.js:3-15",
+      "fix": "Update backend/controllers/projectController.js lines 3-15 to add filter: const projects = await Project.find({ status: 'published' }).sort({ createdAt: -1 }). Also update getFeaturedProjects() to include status filter."
+    },
+    {
+      "id": 5,
+      "severity": "MEDIUM",
+      "title": "ImageUploader Component Reuse Ambiguity",
+      "problem": "Design proposes creating a new ImageUploader.jsx component, but SupabaseUploader.jsx already exists and provides all required functionality (batch upload, previews, progress bars, drag-and-drop). Design does not clarify whether to create a new component, reuse existing, or refactor existing.",
+      "location": "design.md Section 2 vs src/components/SupabaseUploader.jsx and src/pages/admin/ProjectsPage.jsx:8",
+      "fix": "Option A (RECOMMENDED): Reuse existing SupabaseUploader. Update design to remove 'File to Create: ImageUploader.jsx' and document that ProjectFormModal will integrate with SupabaseUploader. Option B: Create new ImageUploader as a wrapper/enhancement around SupabaseUploader and document the relationship."
+    }
+  ],
+  "reviewDoc": "d:/Devlopment/portfolio/frontend/.agents/tasks/projects-feature/design-review.md"
+}

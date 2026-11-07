@@ -8,22 +8,26 @@ import {
   updateAdminProject,
 } from "../../services/adminService";
 import AdminModal from "../../components/admin/AdminModal";
+import SupabaseUploader from "../../components/SupabaseUploader";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const [projectForm, setProjectForm] = useState({
     title: "",
     slug: "",
     description: "",
     image: "",
+    images: [],
     category: "MERN Stack",
     technologies: "",
     githubUrl: "",
     liveUrl: "",
+    projectLink: "",
     featured: false,
     status: "Completed",
   });
@@ -59,27 +63,33 @@ export default function ProjectsPage() {
       slug: "",
       description: "",
       image: "",
+      images: [],
       category: "MERN Stack",
       technologies: "",
       githubUrl: "",
       liveUrl: "",
+      projectLink: "",
       featured: false,
       status: "Completed",
     });
+    setUploadedImages([]);
     setEditingProject(null);
   };
 
   const openEditModal = (project) => {
     setEditingProject(project);
+    setUploadedImages(project.images || []);
     setProjectForm({
       title: project.title,
       slug: project.slug,
       description: project.description,
       image: project.image,
+      images: project.images || [],
       category: project.category,
       technologies: project.technologies?.join(", ") || "",
       githubUrl: project.githubUrl || "",
       liveUrl: project.liveUrl || "",
+      projectLink: project.projectLink || "",
       featured: project.featured || false,
       status: project.status || "Completed",
     });
@@ -93,9 +103,15 @@ export default function ProjectsPage() {
       return;
     }
 
+    if (uploadedImages.length === 0) {
+      toast.error("Please upload at least one image");
+      return;
+    }
+
     try {
       const projectData = {
         ...projectForm,
+        images: uploadedImages,
         technologies: projectForm.technologies
           .split(",")
           .map((item) => item.trim())
@@ -121,9 +137,15 @@ export default function ProjectsPage() {
       return;
     }
 
+    if (uploadedImages.length === 0) {
+      toast.error("Please ensure at least one image is selected");
+      return;
+    }
+
     try {
       const projectData = {
         ...projectForm,
+        images: uploadedImages,
         technologies: projectForm.technologies
           .split(",")
           .map((item) => item.trim())
@@ -208,6 +230,8 @@ export default function ProjectsPage() {
           <ProjectFormFields
             form={projectForm}
             onChange={handleProjectChange}
+            onUploadComplete={setUploadedImages}
+            uploadedImages={uploadedImages}
           />
 
           <button
@@ -251,6 +275,8 @@ export default function ProjectsPage() {
           <ProjectFormFields
             form={projectForm}
             onChange={handleProjectChange}
+            onUploadComplete={setUploadedImages}
+            uploadedImages={uploadedImages}
           />
 
           <div className="flex gap-3 pt-5">
@@ -278,9 +304,20 @@ export default function ProjectsPage() {
   );
 }
 
-function ProjectFormFields({ form, onChange }) {
+function ProjectFormFields({ form, onChange, onUploadComplete, uploadedImages }) {
   return (
     <div className="grid md:grid-cols-2 gap-5">
+      {/* Image Uploader */}
+      <div className="md:col-span-2">
+        <label className="block text-sm text-gray-400 mb-3">
+          Project Images (Supabase)
+        </label>
+        <SupabaseUploader
+          onUploadComplete={onUploadComplete}
+          previewImages={uploadedImages}
+        />
+      </div>
+
       <Input
         label="Project Title"
         name="title"
@@ -308,11 +345,11 @@ function ProjectFormFields({ form, onChange }) {
       />
 
       <Input
-        label="Image URL"
-        name="image"
-        value={form.image}
+        label="Project Link"
+        name="projectLink"
+        value={form.projectLink}
         onChange={onChange}
-        placeholder="/images/projects/project.jpg"
+        placeholder="https://..."
       />
 
       <div className="md:col-span-2">

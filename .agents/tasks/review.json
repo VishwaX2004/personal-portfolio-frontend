@@ -1,26 +1,17 @@
 {
-  "verdict": "CHANGES_REQUESTED",
+  "verdict": "APPROVED",
   "findings": [
     {
-      "issue": "Year validation accepts invalid years",
+      "issue": "Duplicate admin token storage",
       "severity": "MEDIUM",
-      "description": "Year field accepts '0000' because the regex /^\\d{4}$/ matches it; validation should exclude years 0 or 1 as unrealistic. Move the range check before parsing or use a stricter regex.",
-      "file": "src/utils/adminHelpers.js",
-      "line": "lines 40-54"
+      "description": "LoginPage stores token to `adminToken`, but api.js requests attach a `token` from localStorage (never set by admin flow). Public endpoints won't receive the admin token after login.",
+      "fix": "Have LoginPage set both `adminToken` and `token` for compatibility, or update api.js to check `adminToken` if `token` is missing."
     },
     {
-      "issue": "Empty state missing on ProjectsPage",
+      "issue": "No explicit logout cleanup from API side",
       "severity": "LOW",
-      "description": "If no projects exist, the grid renders empty with no message. Add a placeholder card (like MessagesPage does) to clarify the state.",
-      "file": "src/pages/admin/ProjectsPage.jsx",
-      "line": "line 237"
-    },
-    {
-      "issue": "Inconsistent error message extraction",
-      "severity": "LOW",
-      "description": "parseErrorMessage assumes error.response?.data?.message exists, but some API errors may return messages in a different structure. Test with backend to confirm message extraction works for all error cases.",
-      "file": "src/utils/adminHelpers.js",
-      "line": "lines 56-63"
+      "description": "The public api.js interceptor has no 401 cleanup handler. If a public endpoint is ever protected and returns 401, a stale `token` could persist in localStorage.",
+      "fix": "Add a 401 response interceptor to api.js that clears the token and redirects, mirroring adminService behavior."
     }
   ],
   "reviewDoc": "d:\\Devlopment\\portfolio\\frontend\\.agents\\tasks\\review.md"
