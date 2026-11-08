@@ -1,0 +1,44 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "H1",
+      "severity": "HIGH",
+      "title": "Form Normalization Code Doesn't Match Current Implementation",
+      "description": "The design specifies defensive null-checks for form normalization in openEditModal() (e.g., `typeof item.logoUrl === 'string'`) that do NOT exist in the current EducationPage.jsx code (line ~125). The current code uses simple `||` coercion. This is ambiguous: is the design recommending an enhancement, or claiming it's already implemented? Applying the design code exactly could change edit behavior unexpectedly.",
+      "location": "Design § 'Required Form Data Normalization (M1 Resolution)' vs. src/pages/admin/EducationPage.jsx:115-134",
+      "fix": "Clarify in the design whether defensive normalization is (a) a required fix, (b) an optional enhancement, or (c) not needed. If required, update the implementation instructions to apply the pattern to BOTH add and edit flows consistently. If optional, note it as a defensive pattern and leave implementation to the developer's discretion."
+    },
+    {
+      "id": "H2",
+      "severity": "HIGH",
+      "title": "CertificateLightbox Keyboard Event Handler Memory Leak Risk",
+      "description": "The CertificateLightbox component adds a window-level keydown listener that is removed on unmount. In rapid open/close cycles, the listener may not fully detach before re-attaching, causing a memory leak. Additionally, the dependency array includes `images.length`, which may cause unnecessary re-attachment if images change while the lightbox is open. Multiple simultaneous lightbox instances would also conflict on the window listener.",
+      "location": "Design § 'H4 Resolution — CertificateLightbox Component Implementation' (useEffect hook for keydown)",
+      "fix": "Move the handleKeyDown function inside the useEffect so it captures current state. Remove `images.length` from the dependency array (keep only `isOpen`). Test rapid open/close cycles to verify no memory leak. Consider using a ref-based guard if the component could be mounted multiple times."
+    },
+    {
+      "id": "M1",
+      "severity": "MEDIUM",
+      "title": "Error Handling in handleCreateEducation() Does Not Match Design Specification",
+      "description": "The design recommends granular try-catch blocks per upload type with detailed error messages (e.g., 'Logo upload error: Network timeout'). The actual code in handleCreateEducation() (line ~169) uses a single outer try-catch and shows generic messages (e.g., 'Failed to upload logo'). Additionally, the code does not use optional chaining (?.) on response properties, and setUploading is not reset on early return, causing the UI to hang if upload fails.",
+      "location": "Design § 'Required Granular Error Handling (M2 Resolution)' vs. src/pages/admin/EducationPage.jsx:165-220",
+      "fix": "Apply the granular error handling pattern shown in the design. Wrap each upload block in its own try-catch, use optional chaining on response properties, and ensure setUploading(false) is called on all error paths. Apply the same pattern to handleUpdateEducation()."
+    }
+  ],
+  "verifiedAssumptions": [
+    "adminService.js exports uploadLogo() and uploadCertificationImages() with correct signatures",
+    "EducationPage.jsx already has radio button type toggle for Education vs Certificate",
+    "EducationPage.jsx already has logo upload and certificate images upload UI implemented",
+    "EducationCard and CertificateCard already display logos and images",
+    "Upload response structures verified: uploadLogo returns { success, publicUrl }; uploadCertificationImages returns { success, uploaded: [{ publicUrl }] }",
+    "experience.jsx does NOT have multiple default exports (original error already resolved)",
+    "ZoomIn icon is available in lucide-react",
+    "Form validation for required fields and year ranges already in place"
+  ],
+  "unverifiedAssumptions": [
+    "Backend will accept and persist logoUrl and certificateImages fields in POST/PUT requests (backend not in workspace; cannot verify)",
+    "Defensive form normalization (M1) is intended to replace current code or work alongside it (design language is ambiguous)"
+  ],
+  "reviewDoc": "d:\\Devlopment\\portfolio\\frontend\\.agents\\tasks\\education-images\\design-review.md"
+}

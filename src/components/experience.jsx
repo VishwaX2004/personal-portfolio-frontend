@@ -613,14 +613,14 @@ export default function Experience() {
         setLoading(true);
         let educationData;
 
-        // Try public endpoint first
+        // Fetch from qualifications endpoint
         try {
-          const response = await API.get("/api/education");
-          console.log("✓ Fetched from /api/education");
+          const response = await API.get("/api/qualifications");
+          console.log("✓ Fetched from /api/qualifications");
           educationData = response.data || [];
         } catch (publicError) {
           // Fallback to admin endpoint if public endpoint doesn't exist
-          console.log("⚠ /api/education not available, using /api/admin/education");
+          console.log("⚠ /api/qualifications not available, using /api/admin/qualifications");
           educationData = await getAdminEducation();
         }
 
