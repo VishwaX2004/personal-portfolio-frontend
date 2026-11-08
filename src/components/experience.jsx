@@ -907,6 +907,34 @@ export default function Experience() {
         </div>
 
 
+        {/* EDUCATION & EXPERIENCE HEADER */}
+
+        <div className="mb-12 mt-8">
+          <h3
+            className="
+              text-2xl
+              sm:text-3xl
+              font-bold
+              text-white
+              tracking-tight
+              mb-2
+            "
+          >
+            Education & Experience
+          </h3>
+          <div
+            className="
+              w-12
+              h-1
+              bg-gradient-to-r
+              from-blue-500
+              to-purple-600
+              rounded-full
+            "
+          />
+        </div>
+
+
         {/* TIMELINE */}
 
         <div className="relative">
