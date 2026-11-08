@@ -180,28 +180,55 @@ export default function EducationPage() {
       let logoUrl = "";
       let certificateImages = [];
 
-      // Upload logo if provided (education)
+      // **GRANULAR ERROR HANDLING FOR LOGO UPLOAD**
       if (entryType === "education" && logoFile) {
-        const uploadResponse = await uploadLogo(logoFile);
-        if (uploadResponse.success) {
-          logoUrl = uploadResponse.publicUrl;
-        } else {
-          toast.error("Failed to upload logo");
+        try {
+          const uploadResponse = await uploadLogo(logoFile);
+          if (uploadResponse?.success && uploadResponse?.publicUrl) {
+            logoUrl = uploadResponse.publicUrl;
+          } else {
+            const errorMsg = uploadResponse?.message || "Upload failed";
+            toast.error(`Logo upload failed: ${errorMsg}`);
+            setUploading(false);
+            return;
+          }
+        } catch (uploadError) {
+          const errorMsg = uploadError?.response?.data?.message || uploadError?.message || "Network error";
+          toast.error(`Logo upload error: ${errorMsg}`);
+          setUploading(false);
           return;
         }
       }
 
-      // Upload certificate images if provided (certificate)
+      // **GRANULAR ERROR HANDLING FOR CERTIFICATE IMAGES UPLOAD**
       if (entryType === "certificate" && certificateImageFiles.length > 0) {
-        const uploadResponse = await uploadCertificationImages(certificateImageFiles);
-        if (uploadResponse.success) {
-          certificateImages = uploadResponse.uploaded.map(item => item.publicUrl);
-        } else {
-          toast.error("Failed to upload some certificate images");
+        try {
+          const uploadResponse = await uploadCertificationImages(certificateImageFiles);
+          if (uploadResponse?.success && Array.isArray(uploadResponse?.uploaded)) {
+            certificateImages = uploadResponse.uploaded
+              .map(item => item?.publicUrl)
+              .filter(url => typeof url === 'string' && url.length > 0);
+            
+            if (certificateImages.length === 0) {
+              toast.error("Certificate images uploaded but no URLs returned");
+              setUploading(false);
+              return;
+            }
+          } else {
+            const errorMsg = uploadResponse?.message || "Upload failed";
+            toast.error(`Certificate images upload failed: ${errorMsg}`);
+            setUploading(false);
+            return;
+          }
+        } catch (uploadError) {
+          const errorMsg = uploadError?.response?.data?.message || uploadError?.message || "Network error";
+          toast.error(`Certificate images upload error: ${errorMsg}`);
+          setUploading(false);
           return;
         }
       }
 
+      // If we get here, uploads succeeded; now submit to API
       const submitData = {
         type: entryType,
         ...(entryType === "education" && {
@@ -223,14 +250,15 @@ export default function EducationPage() {
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await createAdminQualification(submitData);
+      await createAdminEducation(submitData);
       toast.success(`${entryType === "education" ? "Education" : "Certificate"} added successfully!`);
       resetForm();
       setShowAddForm(false);
       fetchEducation();
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to add entry");
+      console.error("API error:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
+      toast.error(`Failed to save entry: ${errorMsg}`);
     } finally {
       setUploading(false);
     }
@@ -254,32 +282,61 @@ export default function EducationPage() {
     try {
       setUploading(true);
 
-      let logoUrl = formData.logoUrl;
-      let certificateImages = formData.certificateImages;
+      let logoUrl = formData.logoUrl || "";
+      let certificateImages = formData.certificateImages || [];
 
-      // Upload new logo if provided (education)
+      // **GRANULAR ERROR HANDLING FOR LOGO UPLOAD**
       if (entryType === "education" && logoFile) {
-        const uploadResponse = await uploadLogo(logoFile);
-        if (uploadResponse.success) {
-          logoUrl = uploadResponse.publicUrl;
-        } else {
-          toast.error("Failed to upload logo");
+        try {
+          const uploadResponse = await uploadLogo(logoFile);
+          if (uploadResponse?.success && uploadResponse?.publicUrl) {
+            logoUrl = uploadResponse.publicUrl;
+          } else {
+            const errorMsg = uploadResponse?.message || "Upload failed";
+            toast.error(`Logo upload failed: ${errorMsg}`);
+            setUploading(false);
+            return;
+          }
+        } catch (uploadError) {
+          const errorMsg = uploadError?.response?.data?.message || uploadError?.message || "Network error";
+          toast.error(`Logo upload error: ${errorMsg}`);
+          setUploading(false);
           return;
         }
       }
 
-      // Upload new certificate images if provided (certificate)
+      // **GRANULAR ERROR HANDLING FOR CERTIFICATE IMAGES UPLOAD**
       if (entryType === "certificate" && certificateImageFiles.length > 0) {
-        const uploadResponse = await uploadCertificationImages(certificateImageFiles);
-        if (uploadResponse.success) {
-          const newImages = uploadResponse.uploaded.map(item => item.publicUrl);
-          certificateImages = [...certificateImages, ...newImages];
-        } else {
-          toast.error("Failed to upload some certificate images");
+        try {
+          const uploadResponse = await uploadCertificationImages(certificateImageFiles);
+          if (uploadResponse?.success && Array.isArray(uploadResponse?.uploaded)) {
+            const newImages = uploadResponse.uploaded
+              .map(item => item?.publicUrl)
+              .filter(url => typeof url === 'string' && url.length > 0);
+            
+            if (newImages.length === 0) {
+              toast.error("Certificate images uploaded but no URLs returned");
+              setUploading(false);
+              return;
+            }
+            
+            // Append new images to existing ones
+            certificateImages = [...certificateImages, ...newImages];
+          } else {
+            const errorMsg = uploadResponse?.message || "Upload failed";
+            toast.error(`Certificate images upload failed: ${errorMsg}`);
+            setUploading(false);
+            return;
+          }
+        } catch (uploadError) {
+          const errorMsg = uploadError?.response?.data?.message || uploadError?.message || "Network error";
+          toast.error(`Certificate images upload error: ${errorMsg}`);
+          setUploading(false);
           return;
         }
       }
 
+      // If we get here, uploads succeeded; now submit to API
       const submitData = {
         type: entryType,
         ...(entryType === "education" && {
@@ -301,14 +358,15 @@ export default function EducationPage() {
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await updateAdminQualification(editingEducation._id, submitData);
+      await updateAdminEducation(editingEducation._id, submitData);
       toast.success("Entry updated successfully!");
       resetForm();
       setEditingEducation(null);
       fetchEducation();
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to update entry");
+      console.error("API error:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
+      toast.error(`Failed to update entry: ${errorMsg}`);
     } finally {
       setUploading(false);
     }

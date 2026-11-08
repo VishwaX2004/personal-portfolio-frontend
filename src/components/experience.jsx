@@ -8,8 +8,10 @@ import {
   Sparkles,
   ExternalLink,
   Award,
+  ZoomIn,
 } from "lucide-react";
 import API from "../services/api";
+import CertificateLightbox from "./CertificateLightbox";
 
 // =========================================================
 // SCROLL REVEAL HOOK
@@ -58,6 +60,10 @@ function ExperienceCard({
 }) {
   const [ref, visible] =
     useScrollReveal();
+
+  // NEW: State for certificate image lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Determine icon based on type
   let Icon = GraduationCap;
@@ -343,11 +349,14 @@ function ExperienceCard({
           {/* ORGANIZATION */}
 
           <div className="relative flex items-center gap-3 mt-2">
-            {experience.logoUrl && experience.type === "education" && (
+            {experience.type === "education" && experience.logoUrl && typeof experience.logoUrl === 'string' && (
               <img 
                 src={experience.logoUrl} 
-                alt={`${experience.institution} logo`}
+                alt={`${experience.institution || 'Institution'} logo`}
                 className="w-10 h-10 rounded-full object-cover border border-blue-500/30"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
               />
             )}
             <p
@@ -417,21 +426,48 @@ function ExperienceCard({
                 <div className="flex items-center gap-2 mb-3">
                   <Award size={15} className="text-blue-500" />
                   <span className="text-xs uppercase tracking-[0.15em] text-gray-500">
-                    Certificate Images
+                    Certificate Images ({experience.certificateImages.length})
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {experience.certificateImages.map((imgUrl, idx) => (
-                    <div key={idx} className="group relative rounded-lg overflow-hidden">
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setLightboxIndex(idx);
+                        setLightboxOpen(true);
+                      }}
+                      className="group relative rounded-lg overflow-hidden aspect-video border border-blue-500/20 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+                      title="Click to view full size"
+                      aria-label={`Certificate image ${idx + 1} of ${experience.certificateImages.length}`}
+                    >
                       <img 
                         src={imgUrl} 
                         alt={`Certificate ${idx + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border border-blue-500/20 group-hover:border-blue-500/50 group-hover:scale-110 transition-all duration-300 cursor-pointer"
+                        className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
                       />
-                    </div>
+                      
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <ZoomIn size={24} className="text-white" />
+                        </div>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </div>
+
+              {/* Lightbox Modal */}
+              <CertificateLightbox
+                images={experience.certificateImages}
+                isOpen={lightboxOpen}
+                onClose={() => setLightboxOpen(false)}
+                initialIndex={lightboxIndex}
+              />
             </div>
           )}
 
