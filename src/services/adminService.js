@@ -128,6 +128,42 @@ export const deleteAdminEducation = async (id) => {
 };
 
 // ============================================================
+// FILE UPLOADS
+// ============================================================
+
+export const uploadLogo = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await adminAPI.post("/api/upload/logo", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const uploadCertificationImages = async (files) => {
+  try {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    const response = await adminAPI.post("/api/upload/certifications", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ============================================================
 // MESSAGES
 // ============================================================
 

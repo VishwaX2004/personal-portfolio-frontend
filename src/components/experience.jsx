@@ -342,19 +342,26 @@ function ExperienceCard({
 
           {/* ORGANIZATION */}
 
-          <p
-            className="
-              relative
+          <div className="relative flex items-center gap-3 mt-2">
+            {experience.logoUrl && experience.type === "education" && (
+              <img 
+                src={experience.logoUrl} 
+                alt={`${experience.institution} logo`}
+                className="w-10 h-10 rounded-full object-cover border border-blue-500/30"
+              />
+            )}
+            <p
+              className="
+                relative
 
-              text-blue-500
+                text-blue-500
 
-              mt-2
-
-              font-medium
-            "
-          >
-            {experience.institution || experience.field}
-          </p>
+                font-medium
+              "
+            >
+              {experience.institution || experience.field}
+            </p>
+          </div>
 
 
           {/* LOCATION */}
@@ -403,6 +410,30 @@ function ExperienceCard({
 
 
           {/* CERTIFICATE IMAGE */}
+
+          {experience.certificateImages && experience.certificateImages.length > 0 && (
+            <div className="relative mt-6">
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Award size={15} className="text-blue-500" />
+                  <span className="text-xs uppercase tracking-[0.15em] text-gray-500">
+                    Certificate Images
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {experience.certificateImages.map((imgUrl, idx) => (
+                    <div key={idx} className="group relative rounded-lg overflow-hidden">
+                      <img 
+                        src={imgUrl} 
+                        alt={`Certificate ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-blue-500/20 group-hover:border-blue-500/50 group-hover:scale-110 transition-all duration-300 cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {experience.certificateUrl && (
             <div className="relative mt-7">
