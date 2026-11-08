@@ -13,6 +13,7 @@ import {
 import API from "../services/api";
 import { getAdminEducation } from "../services/adminService";
 import CertificateLightbox from "./CertificateLightbox";
+import ExperienceCardNew from "./ExperienceCardNew";
 
 // =========================================================
 // SCROLL REVEAL HOOK
@@ -970,11 +971,12 @@ export default function Experience() {
 
             {experiences.length > 0 ? (
               experiences.map((experience, index) => (
-                <ExperienceCard
+                <ExperienceCardNew
                   key={`${experience._id}-${index}`}
                   experience={experience}
                   index={index}
                   isRight={index % 2 !== 0}
+                  useScrollReveal={useScrollReveal}
                 />
               ))
             ) : (
