@@ -11,6 +11,7 @@ import {
   ZoomIn,
 } from "lucide-react";
 import API from "../services/api";
+import { getAdminEducation } from "../services/adminService";
 import CertificateLightbox from "./CertificateLightbox";
 
 // =========================================================
@@ -610,10 +611,24 @@ export default function Experience() {
     const fetchExperiences = async () => {
       try {
         setLoading(true);
-        const response = await API.get("/api/education");
-        setExperiences(response.data || []);
+        let educationData;
+
+        // Try public endpoint first
+        try {
+          const response = await API.get("/api/education");
+          console.log("✓ Fetched from /api/education");
+          educationData = response.data || [];
+        } catch (publicError) {
+          // Fallback to admin endpoint if public endpoint doesn't exist
+          console.log("⚠ /api/education not available, using /api/admin/education");
+          educationData = await getAdminEducation();
+        }
+
+        setExperiences(educationData || []);
+        console.log(`Loaded ${educationData?.length || 0} education entries`);
       } catch (error) {
-        console.error("Error fetching education data:", error);
+        console.error("✗ Error fetching education data:", error.message);
+        setExperiences([]);
       } finally {
         setLoading(false);
       }
