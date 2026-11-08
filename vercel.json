@@ -4,5 +4,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "VITE_API_URL": "https://vish-portfolio-api.onrender.com",
+    "VITE_GITHUB_URL": "https://github.com/VishwaX2004",
+    "VITE_LLINKEDIN_URL": "https://www.linkedin.com/in/vishwa-pramuditha-071b5331a/",
+    "VITE_SUPABASE_URL": "https://twlddyoghlnqpbeswkxv.supabase.co",
+    "VITE_SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3bGRkeW9naGxucXBiZXN3a3h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNjE1NjksImV4cCI6MjEwOTYzNzU2OX0.lgZc8sI-ZOrXoVwBvxNv2txNv5X2SvLnDJn9AXndpUc"
+  }
 }
