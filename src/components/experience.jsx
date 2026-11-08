@@ -9,52 +9,7 @@ import {
   ExternalLink,
   Award,
 } from "lucide-react";
-
-// =========================================================
-// EXPERIENCE DATA
-// =========================================================
-
-const experiences = [
-  {
-    type: "Education",
-    title: "Bachelor's Degree in Information Technology",
-    organization: "University of Ruhuna",
-    location: "Sri Lanka",
-    period: "2023 - Present",
-    description:
-      "Studying Information Technology with a focus on software development, web technologies, databases, networking, data structures, and software engineering.",
-    icon: GraduationCap,
-  },
-
-  {
-    type: "Project Experience",
-    title: "Full-Stack Web Developer",
-    organization: "Personal & Academic Projects",
-    location: "Sri Lanka",
-    period: "2024 - Present",
-    description:
-      "Developing full-stack web applications using React, Node.js, Express.js, MongoDB and modern frontend technologies. Building real-world projects to strengthen practical development skills.",
-    icon: Briefcase,
-  },
-
-  {
-    type: "Learning",
-    title: "MERN Stack Development",
-    organization: "SKYREK Digital Solutions",
-    location: "Online",
-    period: "2024 - Present",
-    description:
-      "Continuously learning and applying modern JavaScript technologies including React, Express, Node.js, MongoDB, REST APIs, authentication and responsive UI development.",
-    icon: Briefcase,
-
-    image: "/experience-certificate.png",
-
-    imageTitle: "MERN Stack Development",
-
-    imageDescription:
-      "Certificate of Completion and Declaration of Participation",
-  },
-];
+import API from "../services/api";
 
 // =========================================================
 // SCROLL REVEAL HOOK
@@ -104,7 +59,13 @@ function ExperienceCard({
   const [ref, visible] =
     useScrollReveal();
 
-  const Icon = experience.icon;
+  // Determine icon based on type
+  let Icon = GraduationCap;
+  if (experience.type === "certificate") {
+    Icon = Award;
+  } else if (experience.type === "experience") {
+    Icon = Briefcase;
+  }
 
   return (
     <div
@@ -131,9 +92,7 @@ function ExperienceCard({
       }}
     >
 
-      {/* =================================================
-          TIMELINE DOT
-      ================================================= */}
+      {/* TIMELINE DOT */}
 
       <div
         className={`
@@ -190,9 +149,7 @@ function ExperienceCard({
       </div>
 
 
-      {/* =================================================
-          CONTENT
-      ================================================= */}
+      {/* CONTENT */}
 
       <div
         className={`
@@ -329,7 +286,11 @@ function ExperienceCard({
                 tracking-wide
               "
             >
-              {experience.type}
+              {experience.type === "education" 
+                ? "Education" 
+                : experience.type === "certificate"
+                ? "Certificate"
+                : "Experience"}
             </span>
 
 
@@ -345,7 +306,8 @@ function ExperienceCard({
             >
               <Calendar size={13} />
 
-              {experience.period}
+              {experience.startYear}
+              {experience.endYear ? ` - ${experience.endYear}` : " - Present"}
             </span>
 
           </div>
@@ -374,7 +336,7 @@ function ExperienceCard({
               duration-300
             "
           >
-            {experience.title}
+            {experience.degree}
           </h3>
 
 
@@ -391,31 +353,33 @@ function ExperienceCard({
               font-medium
             "
           >
-            {experience.organization}
+            {experience.institution || experience.field}
           </p>
 
 
           {/* LOCATION */}
 
-          <div
-            className="
-              relative
+          {experience.institution && (
+            <div
+              className="
+                relative
 
-              flex
-              items-center
-              gap-2
+                flex
+                items-center
+                gap-2
 
-              text-gray-600
+                text-gray-600
 
-              text-sm
+                text-sm
 
-              mt-3
-            "
-          >
-            <MapPin size={14} />
+                mt-3
+              "
+            >
+              <MapPin size={14} />
 
-            {experience.location}
-          </div>
+              {experience.field}
+            </div>
+          )}
 
 
           {/* DESCRIPTION */}
@@ -438,11 +402,9 @@ function ExperienceCard({
           </p>
 
 
-          {/* =================================================
-              CERTIFICATE
-          ================================================= */}
+          {/* CERTIFICATE IMAGE */}
 
-          {experience.image && (
+          {experience.certificateUrl && (
             <div className="relative mt-7">
 
               <div
@@ -475,98 +437,29 @@ function ExperienceCard({
                       text-gray-500
                     "
                   >
-                    Certification
+                    Certificate
                   </span>
 
                 </div>
 
 
-                <ExternalLink
-                  size={14}
+                <a
+                  href={experience.certificateUrl}
+                  target="_blank"
+                  rel="noreferrer"
                   className="
                     text-gray-700
 
-                    group-hover:text-blue-500
+                    hover:text-blue-500
 
                     transition-colors
                     duration-300
                   "
-                />
+                >
+                  <ExternalLink size={14} />
+                </a>
 
               </div>
-
-
-              {/* IMAGE */}
-
-              <div
-                className="
-                  relative
-                  overflow-hidden
-
-                  rounded-xl
-
-                  border
-                  border-white/10
-
-                  bg-black/40
-
-                  group/certificate
-                "
-              >
-
-                <img
-                  src={experience.image}
-                  alt={experience.imageTitle}
-                  className="
-                    w-full
-                    h-auto
-
-                    object-cover
-
-                    transition-transform
-                    duration-700
-                    ease-out
-
-                    group-hover/certificate:scale-[1.025]
-                  "
-                />
-
-                <div
-                  className="
-                    absolute
-                    inset-0
-
-                    bg-gradient-to-t
-                    from-black/40
-                    via-transparent
-                    to-transparent
-
-                    opacity-0
-
-                    group-hover/certificate:opacity-100
-
-                    transition-opacity
-                    duration-500
-
-                    pointer-events-none
-                  "
-                />
-
-              </div>
-
-
-              <p
-                className="
-                  text-[11px]
-                  text-gray-600
-
-                  mt-2
-
-                  text-center
-                "
-              >
-                {experience.imageDescription}
-              </p>
 
             </div>
           )}
@@ -618,12 +511,11 @@ function ExperienceCard({
                 duration-300
               "
             >
-              {experience.type === "Education"
+              {experience.type === "education"
                 ? "Academic Journey"
-                : experience.type ===
-                  "Project Experience"
-                ? "Building & Learning"
-                : "Continuous Learning"}
+                : experience.type === "certificate"
+                ? "Professional Certification"
+                : "Building & Learning"}
             </span>
 
           </div>
@@ -644,6 +536,46 @@ export default function Experience() {
   const [headingRef, headingVisible] =
     useScrollReveal();
 
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        setLoading(true);
+        const response = await API.get("/api/education");
+        setExperiences(response.data || []);
+      } catch (error) {
+        console.error("Error fetching education data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
+
+  if (loading) {
+    return (
+      <section
+        id="experience"
+        className="
+          relative
+          scroll-mt-20
+          py-24
+          sm:py-28
+          lg:py-32
+          overflow-hidden
+          bg-[#080808]
+        "
+      >
+        <div className="flex items-center justify-center py-20">
+          <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id="experience"
@@ -654,7 +586,7 @@ export default function Experience() {
 
         py-24
         sm:py-28
-        lg:py-5
+        lg:py-32
 
         overflow-hidden
 
@@ -662,9 +594,7 @@ export default function Experience() {
       "
     >
 
-      {/* =================================================
-          BACKGROUND
-      ================================================= */}
+      {/* BACKGROUND */}
 
       <div
         className="
@@ -754,9 +684,7 @@ export default function Experience() {
       </div>
 
 
-      {/* =================================================
-          CONTENT
-      ================================================= */}
+      {/* CONTENT */}
 
       <div
         className="
@@ -772,9 +700,7 @@ export default function Experience() {
         "
       >
 
-        {/* =================================================
-            SECTION HEADER
-        ================================================= */}
+        {/* SECTION HEADER */}
 
         <div
           ref={headingRef}
@@ -899,9 +825,7 @@ export default function Experience() {
         </div>
 
 
-        {/* =================================================
-            TIMELINE
-        ================================================= */}
+        {/* TIMELINE */}
 
         <div className="relative">
 
@@ -934,15 +858,19 @@ export default function Experience() {
 
           <div className="space-y-12">
 
-            {experiences.map(
-              (experience, index) => (
+            {experiences.length > 0 ? (
+              experiences.map((experience, index) => (
                 <ExperienceCard
-                  key={`${experience.title}-${index}`}
+                  key={`${experience._id}-${index}`}
                   experience={experience}
                   index={index}
                   isRight={index % 2 !== 0}
                 />
-              )
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-12">
+                No education or certificate data available yet.
+              </div>
             )}
 
           </div>
@@ -952,9 +880,7 @@ export default function Experience() {
       </div>
 
 
-      {/* =================================================
-          BOTTOM LINE
-      ================================================= */}
+      {/* BOTTOM LINE */}
 
       <div
         className="
@@ -979,3 +905,126 @@ export default function Experience() {
     </section>
   );
 }
+
+// =========================================================
+// SCROLL REVEAL HOOK
+// =========================================================
+
+function useScrollReveal() {
+  const [visible, setVisible] = useState(false);
+
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+
+          observer.unobserve(element);
+        }
+      },
+      {
+        threshold: 0.15,
+        rootMargin: "0px 0px -80px 0px",
+      }
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, visible];
+}
+
+// =========================================================
+// EXPERIENCE CARD
+// =========================================================
+
+function ExperienceCard({
+  experience,
+  index,
+  isRight,
+}) {
+  const [ref, visible] =
+    useScrollReveal();
+
+  const Icon = experience.icon;
+
+  return (
+    <div
+      ref={ref}
+      className={`
+        relative
+
+        transition-all
+        duration-700
+        ease-[cubic-bezier(0.22,1,0.36,1)]
+
+        ${
+          visible
+            ? "opacity-100 translate-y-0 translate-x-0 scale-100"
+            : `opacity-0 translate-y-10 ${
+                isRight
+                  ? "md:translate-x-10"
+                  : "md:-translate-x-10"
+              } scale-[0.97]`
+        }
+      `}
+      style={{
+        transitionDelay: `${index * 100}ms`,
+      }}
+    >
+
+      {/* =================================================
+          TIMELINE DOT
+      ================================================= */}
+
+      <div
+        className={`
+          absolute
+          left-[20px]
+          md:left-1/2
+          -translate-x-1/2
+
+          w-10
+          h-10
+
+          rounded-full
+
+          bg-[#080808]
+
+          border
+          border-blue-500/40
+
+          flex
+          items-center
+          justify-center
+
+          z-20
+
+          transition-all
+          duration-700
+
+          ${
+            visible
+              ? "scale-100 opacity-100"
+              : "scale-50 opacity-0"
+          }
+        `}
+      >
+
+        <div
+          className="
+            absolute
+            inset-1
+            rounded-full
+            bg-blue-500/10
+          "
+        />
+
