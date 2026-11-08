@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, Edit2, X, GraduationCap, Award, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import {
-  getAdminEducation,
-  createAdminEducation,
-  updateAdminEducation,
-  deleteAdminEducation,
+  getAdminQualifications,
+  createAdminQualification,
+  updateAdminQualification,
+  deleteAdminQualification,
   uploadLogo,
   uploadCertificationImages,
 } from "../../services/adminService";
@@ -41,11 +41,11 @@ export default function EducationPage() {
   const fetchEducation = async () => {
     try {
       setLoading(true);
-      const data = await getAdminEducation();
+      const data = await getAdminQualifications();
       setEducation(data || []);
     } catch (error) {
-      console.error("Error fetching education:", error);
-      toast.error("Failed to load education data");
+      console.error("Error fetching qualifications:", error);
+      toast.error("Failed to load qualifications data");
     } finally {
       setLoading(false);
     }
@@ -240,17 +240,16 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          degree: formData.degree,
-          field: formData.field,
-          startYear: startYearNum || null,
-          certificateUrl: formData.certificateUrl,
+          certificateName: formData.degree,  // Map UI degree field to certificateName
+          issuer: formData.field,  // Map UI field to issuer
+          issueDate: formData.startYear ? new Date(formData.startYear) : null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description,
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await createAdminEducation(submitData);
+      await createAdminQualification(submitData);
       toast.success(`${entryType === "education" ? "Education" : "Certificate"} added successfully!`);
       resetForm();
       setShowAddForm(false);
@@ -348,17 +347,16 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          degree: formData.degree,
-          field: formData.field,
-          startYear: parseInt(formData.startYear, 10) || null,
-          certificateUrl: formData.certificateUrl,
+          certificateName: formData.degree,  // Map UI degree field to certificateName
+          issuer: formData.field,  // Map UI field to issuer
+          issueDate: formData.startYear ? new Date(formData.startYear) : null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description,
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await updateAdminEducation(editingEducation._id, submitData);
+      await updateAdminQualification(editingEducation._id, submitData);
       toast.success("Entry updated successfully!");
       resetForm();
       setEditingEducation(null);
