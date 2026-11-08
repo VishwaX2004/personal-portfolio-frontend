@@ -88,7 +88,47 @@ export const deleteAdminProject = async (id) => {
 };
 
 // ============================================================
-// EDUCATION
+// QUALIFICATIONS
+// ============================================================
+
+export const getAdminQualifications = async () => {
+  try {
+    const response = await adminAPI.get("/api/admin/qualifications");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createAdminQualification = async (data) => {
+  try {
+    const response = await adminAPI.post("/api/admin/qualifications", data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateAdminQualification = async (id, data) => {
+  try {
+    const response = await adminAPI.put(`/api/admin/qualifications/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteAdminQualification = async (id) => {
+  try {
+    const response = await adminAPI.delete(`/api/admin/qualifications/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ============================================================
+// EDUCATION (Legacy - for backward compatibility)
 // ============================================================
 
 export const getAdminEducation = async () => {

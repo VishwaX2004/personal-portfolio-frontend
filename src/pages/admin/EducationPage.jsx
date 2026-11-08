@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, X, GraduationCap, Award } from "lucide-react";
+import { Plus, Trash2, Edit2, X, GraduationCap, Award, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   getAdminEducation,
@@ -223,7 +223,7 @@ export default function EducationPage() {
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await createAdminEducation(submitData);
+      await createAdminQualification(submitData);
       toast.success(`${entryType === "education" ? "Education" : "Certificate"} added successfully!`);
       resetForm();
       setShowAddForm(false);
@@ -301,7 +301,7 @@ export default function EducationPage() {
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
-      await updateAdminEducation(editingEducation._id, submitData);
+      await updateAdminQualification(editingEducation._id, submitData);
       toast.success("Entry updated successfully!");
       resetForm();
       setEditingEducation(null);
@@ -319,7 +319,7 @@ export default function EducationPage() {
     if (!confirmDelete) return;
 
     try {
-      await deleteAdminEducation(id);
+      await deleteAdminQualification(id);
       toast.success("Entry deleted");
       fetchEducation();
     } catch (error) {
