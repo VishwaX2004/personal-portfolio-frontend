@@ -168,36 +168,87 @@ export const deleteAdminEducation = async (id) => {
 };
 
 // ============================================================
-// FILE UPLOADS
+// FILE UPLOADS - Using Supabase
 // ============================================================
 
-export const uploadLogo = async (file) => {
+import {
+  uploadProjectImages,
+  uploadCertificateImages,
+  uploadLogoToSupabase,
+  deleteImageFromSupabase,
+  deleteImagesFromSupabase,
+} from "./supabaseService";
+
+// Upload project images to Supabase
+export const uploadProjectImagesToSupabase = async (files, projectId) => {
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await adminAPI.post("/api/upload/logo", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    const result = await uploadProjectImages(files, projectId);
+    return {
+      success: true,
+      uploaded: result.uploaded.map(item => ({
+        publicUrl: item.url,
+      })),
+    };
   } catch (error) {
     throw error;
   }
 };
 
+// Upload certificate images to Supabase
+export const uploadCertificateImagesToSupabase = async (files, certificateId) => {
+  try {
+    const result = await uploadCertificateImages(files, certificateId);
+    return {
+      success: true,
+      uploaded: result.uploaded.map(item => ({
+        publicUrl: item.url,
+      })),
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Upload logo to Supabase
+export const uploadLogo = async (file, institutionId = "default") => {
+  try {
+    const result = await uploadLogoToSupabase(file, institutionId);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Legacy certificate upload (maintained for backward compatibility)
 export const uploadCertificationImages = async (files) => {
   try {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-    const response = await adminAPI.post("/api/upload/certifications", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    const result = await uploadCertificateImages(files, "temp");
+    return {
+      success: true,
+      uploaded: result.uploaded.map(item => ({
+        publicUrl: item.url,
+      })),
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete image from Supabase
+export const deleteImageFromStorage = async (imageUrl) => {
+  try {
+    await deleteImageFromSupabase(imageUrl);
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete multiple images from Supabase
+export const deleteImagesFromStorage = async (imageUrls) => {
+  try {
+    await deleteImagesFromSupabase(imageUrls);
+    return { success: true };
   } catch (error) {
     throw error;
   }
