@@ -319,7 +319,7 @@ export default function Hero() {
               RIGHT SIDE - HERO IMAGE WITH ANIMATIONS
           ====================================================== */}
 
-          <div className="hidden lg:flex items-start justify-center pt-15 pl-10">
+          <div className="hidden lg:flex items-start justify-center pt-8 pl-4">
             <div className="relative w-full max-w-sm">
 
               {/* Background glow */}
