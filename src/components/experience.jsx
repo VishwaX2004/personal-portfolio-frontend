@@ -332,7 +332,7 @@ function ExperienceCard({
 
               font-semibold
 
-              mt-5
+              mt-0
 
               tracking-tight
 
@@ -350,7 +350,7 @@ function ExperienceCard({
 
           {/* ORGANIZATION */}
 
-          <div className="relative flex items-center gap-3 mt-2">
+          <div className="relative flex items-center gap-3 mt-0">
             {experience.type === "education" && experience.logoUrl && typeof experience.logoUrl === 'string' && (
               <img 
                 src={experience.logoUrl} 
@@ -602,8 +602,7 @@ function ExperienceCard({
 // =========================================================
 
 export default function Experience() {
-  const [headingRef, headingVisible] =
-    useScrollReveal();
+  const [headingRef, headingVisible] = useScrollReveal();
 
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -645,14 +644,14 @@ export default function Experience() {
         className="
           relative
           scroll-mt-20
-          py-24
+          py-10
           sm:py-28
-          lg:py-32
+          lg:py-10
           overflow-hidden
           bg-[#080808]
         "
       >
-        <div className="flex items-center justify-center py-20">
+        <div className="flex items-center justify-center py-10">
           <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </section>
@@ -667,9 +666,9 @@ export default function Experience() {
 
         scroll-mt-20
 
-        py-24
+        py-10
         sm:py-28
-        lg:py-32
+        lg:py-10
 
         overflow-hidden
 
@@ -783,13 +782,16 @@ export default function Experience() {
         "
       >
 
-        {/* SECTION HEADER */}
+
+
+
+        {/* EDUCATION & EXPERIENCE HEADER - SAME FORMAT AS SKILLS */}
 
         <div
           ref={headingRef}
           className={`
-            max-w-2xl
-            mb-16
+            max-w-3xl
+            mb-14
 
             transition-all
             duration-700
@@ -799,7 +801,7 @@ export default function Experience() {
             ${
               headingVisible
                 ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
+                : "opacity-100 translate-y-0"
             }
           `}
         >
@@ -826,7 +828,7 @@ export default function Experience() {
             "
           >
 
-            <Sparkles
+            <GraduationCap
               size={13}
               className="text-blue-500"
             />
@@ -845,7 +847,7 @@ export default function Experience() {
                 font-medium
               "
             >
-              My Journey
+              Educational Timeline
             </span>
 
           </div>
@@ -866,7 +868,7 @@ export default function Experience() {
               leading-tight
             "
           >
-            Experience{" "}
+            Education{" "}
 
             <span
               className="
@@ -879,60 +881,10 @@ export default function Experience() {
                 text-transparent
               "
             >
-              & Education
+              & Experience
             </span>
           </h2>
 
-
-          {/* DESCRIPTION */}
-
-          <p
-            className="
-              text-gray-500
-
-              mt-5
-
-              text-base
-              sm:text-lg
-
-              leading-relaxed
-
-              max-w-xl
-            "
-          >
-            A timeline of my academic journey,
-            development experience and continuous
-            learning.
-          </p>
-
-        </div>
-
-
-        {/* EDUCATION & EXPERIENCE HEADER */}
-
-        <div className="mb-12 mt-8">
-          <h3
-            className="
-              text-2xl
-              sm:text-3xl
-              font-bold
-              text-white
-              tracking-tight
-              mb-2
-            "
-          >
-            Education & Experience
-          </h3>
-          <div
-            className="
-              w-12
-              h-1
-              bg-gradient-to-r
-              from-blue-500
-              to-purple-600
-              rounded-full
-            "
-          />
         </div>
 
 

@@ -103,8 +103,8 @@ export default function ExperienceCard({
             ${colorClass.light}
             to-transparent
             backdrop-blur-xl
-            p-7
-            md:p-9
+            p-5
+            md:p-6
             transition-all
             duration-500
             hover:-translate-y-4
@@ -150,14 +150,14 @@ export default function ExperienceCard({
           />
 
           {/* HEADER WITH LOGO AND BADGE */}
-          <div className="flex items-start justify-between mb-6 gap-4">
+          <div className="flex items-start justify-between mb-3 gap-4">
             {/* LOGO - LARGE FOR EDUCATION */}
             {isEducation && experience.logoUrl && typeof experience.logoUrl === "string" && (
               <div className="relative flex-shrink-0">
                 <img
                   src={experience.logoUrl}
                   alt={`${experience.institution || "Institution"} logo`}
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border-2 border-blue-500/30 shadow-lg hover:scale-105 transition-transform duration-300"
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover border-2 border-blue-500/30 shadow-lg hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     e.target.style.display = "none";
                   }}
@@ -195,7 +195,7 @@ export default function ExperienceCard({
               text-xs
               font-bold
               ${colorClass.text}
-              mb-3
+              mb-1
               uppercase
               tracking-[0.2em]
               opacity-90
@@ -207,10 +207,10 @@ export default function ExperienceCard({
           {/* DEGREE/CERTIFICATE NAME - BIG & BOLD */}
           <h3
             className="
-              text-3xl
-              md:text-4xl
+              text-xl
+              md:text-2xl
               font-black
-              mb-4
+              mb-2
               tracking-tight
               text-white
               line-clamp-2
@@ -230,7 +230,7 @@ export default function ExperienceCard({
                 text-sm
                 md:text-base
                 text-gray-400
-                mb-4
+                mb-2
                 font-semibold
               "
             >
@@ -240,7 +240,7 @@ export default function ExperienceCard({
           )}
 
           {/* DATE WITH ICON */}
-          <div className="flex items-center gap-3 text-gray-400 mb-5 text-sm">
+          <div className="flex items-center gap-3 text-gray-400 mb-3 text-sm">
             <div
               className={`
                 w-8
@@ -268,7 +268,7 @@ export default function ExperienceCard({
                 md:text-base
                 text-gray-400
                 leading-relaxed
-                mb-6
+                mb-4
                 line-clamp-3
               "
             >
@@ -280,13 +280,13 @@ export default function ExperienceCard({
           {isCertificate &&
             Array.isArray(experience.certificateImages) &&
             experience.certificateImages.length > 0 && (
-              <div className="mt-7 pt-7 border-t border-white/10">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">
                   📸 Certificate Images ({experience.certificateImages.length})
                 </p>
 
                 {/* GALLERY GRID - LARGER IMAGES */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-3">
                   {experience.certificateImages.map((imgUrl, idx) => (
                     <button
                       key={idx}
@@ -356,7 +356,7 @@ export default function ExperienceCard({
                 hover:${colorClass.text}/80
                 transition-all
                 duration-300
-                mt-6
+                mt-4
                 px-4
                 py-2
                 rounded-lg
@@ -372,7 +372,7 @@ export default function ExperienceCard({
           )}
 
           {/* BOTTOM INDICATOR */}
-          <div className="flex items-center gap-3 mt-6 pt-6 border-t border-white/10">
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
             <span
               className={`
                 w-2
