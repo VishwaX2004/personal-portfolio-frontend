@@ -1,19 +1,15 @@
 import { useState } from "react";
 import {
-  Briefcase,
-  GraduationCap,
-  Calendar,
-  MapPin,
   Award,
-  ZoomIn,
+  Briefcase,
+  Calendar,
   ExternalLink,
+  GraduationCap,
+  ZoomIn,
 } from "lucide-react";
+
 import CertificateLightbox from "./CertificateLightbox";
 
-/**
- * Enhanced ExperienceCard - Shows education and certificate info with logos/images
- * Features: Larger cards, prominent logos, certificate image galleries, better styling
- */
 export default function ExperienceCard({
   experience,
   index,
@@ -23,316 +19,230 @@ export default function ExperienceCard({
   const [ref, visible] = useScrollReveal();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [failedLogoUrl, setFailedLogoUrl] = useState(null);
 
-  // Determine type and colors
   const isEducation = experience.type === "education";
   const isCertificate = experience.type === "certificate";
 
-  let Icon = GraduationCap;
-  if (isCertificate) Icon = Award;
-  else if (experience.type === "experience") Icon = Briefcase;
+  let TimelineIcon = GraduationCap;
+  if (isCertificate) TimelineIcon = Award;
+  else if (experience.type === "experience") TimelineIcon = Briefcase;
 
-  const colorClass = isEducation 
-    ? { border: "border-blue-500", bg: "bg-blue-500", text: "text-blue-400", light: "from-blue-500/5" }
-    : { border: "border-amber-500", bg: "bg-amber-500", text: "text-amber-400", light: "from-amber-500/5" };
+  const logoUrl =
+    typeof experience.logoUrl === "string" ? experience.logoUrl.trim() : "";
+
+  const certificateImages = Array.isArray(experience.certificateImages)
+    ? experience.certificateImages
+    : [];
+
+  const educationDates = experience.startYear
+    ? `${experience.startYear} – ${experience.endYear || "Present"}`
+    : experience.endYear;
 
   return (
     <div
       ref={ref}
-      className={`
-        relative
-        transition-all
-        duration-700
-        ease-[cubic-bezier(0.22,1,0.36,1)]
+      className={`relative transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
         ${
           visible
-            ? "opacity-100 translate-y-0 translate-x-0 scale-100"
-            : `opacity-0 translate-y-10 ${
+            ? "translate-x-0 translate-y-0 scale-100 opacity-100"
+            : `translate-y-10 scale-[0.97] opacity-0 ${
                 isRight ? "md:translate-x-10" : "md:-translate-x-10"
-              } scale-[0.97]`
-        }
-      `}
+              }`
+        }`}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
-      {/* TIMELINE DOT - LARGER */}
       <div
-        className={`
-          absolute
-          left-[20px]
-          md:left-1/2
-          -translate-x-1/2
-          w-14
-          h-14
-          rounded-full
-          bg-[#080808]
-          border-2
-          ${colorClass.border}
-          flex
-          items-center
-          justify-center
-          z-20
-          transition-all
-          duration-700
-          ${visible ? "scale-100 opacity-100" : "scale-50 opacity-0"}
-          shadow-lg
-          ${colorClass.bg}/20
-        `}
-      >
-        <div className={`absolute inset-1 rounded-full ${colorClass.bg}/10`} />
-        <Icon size={22} className={`relative z-10 ${colorClass.text}`} />
-      </div>
-
-      {/* CARD CONTENT */}
-      <div
-        className={`
-          ml-16
-          md:ml-0
-          md:w-[calc(50%-40px)]
-          ${isRight ? "md:ml-auto" : ""}
-        `}
+        aria-hidden="true"
+        className={`absolute left-[20px] z-20 flex h-10 w-10 -translate-x-1/2
+          items-center justify-center rounded-full border-2 bg-[#080808]
+          shadow-lg transition-all duration-700 md:left-1/2 md:h-14 md:w-14
+          ${
+            isEducation
+              ? "border-blue-500 text-blue-400"
+              : "border-amber-500 text-amber-400"
+          }
+          ${visible ? "scale-100 opacity-100" : "scale-50 opacity-0"}`}
       >
         <div
-          className={`
-            group
-            relative
-            overflow-hidden
-            rounded-2xl
-            border-2
-            ${colorClass.border}/30
-            bg-gradient-to-br
-            ${colorClass.light}
-            to-transparent
-            backdrop-blur-xl
-            p-5
-            md:p-6
-            transition-all
-            duration-500
-            hover:-translate-y-4
-            ${colorClass.border}/60
-            hover:bg-white/[0.08]
-            hover:shadow-[0_30px_100px_${isEducation ? 'rgba(37,99,235,0.2)' : 'rgba(217,119,6,0.2)'}]
-          `}
-        >
-          {/* GLOW EFFECT */}
-          <div
-            className={`
-              absolute
-              -top-24
-              -right-24
-              w-56
-              h-56
-              rounded-full
-              ${colorClass.bg}/[0.1]
-              blur-[100px]
-              opacity-0
-              group-hover:opacity-100
-              transition-opacity
-              duration-700
-              pointer-events-none
-            `}
-          />
+          className={`absolute inset-1 rounded-full ${
+            isEducation ? "bg-blue-500/10" : "bg-amber-500/10"
+          }`}
+        />
+        <TimelineIcon className="relative h-5 w-5 md:h-6 md:w-6" />
+      </div>
 
-          {/* TOP GRADIENT LINE */}
-          <div
-            className={`
-              absolute
-              top-0
-              left-8
-              right-8
-              h-px
-              bg-gradient-to-r
-              ${colorClass.text}/50
-              opacity-0
-              group-hover:opacity-100
-              transition-opacity
-              duration-500
-            `}
-          />
-
-          {/* HEADER WITH LOGO AND BADGE */}
-          <div className="flex items-start justify-between mb-3 gap-4">
-            {/* LOGO - LARGE FOR EDUCATION */}
-            {isEducation && experience.logoUrl && typeof experience.logoUrl === "string" && (
-              <div className="relative flex-shrink-0">
-                <img
-                  src={experience.logoUrl}
-                  alt={`${experience.institution || "Institution"} logo`}
-                  className="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover border-2 border-blue-500/30 shadow-lg hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
-                />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/20 to-transparent pointer-events-none" />
+      <div
+        className={`ml-14 min-w-0 md:ml-0 md:w-[calc(50%-40px)] ${
+          isRight ? "md:ml-auto" : ""
+        }`}
+      >
+        {isEducation ? (
+          <article
+            className="rounded-xl border-1.5 border-blue-500/35
+              bg-gradient-to-br from-blue-500/12 via-[#111827] to-[#0d121c]
+              p-4 sm:p-6 shadow-lg transition-all duration-300
+              hover:border-blue-400/55 hover:shadow-xl"
+          >
+            <div className="flex gap-4 sm:gap-5">
+              {/* LOGO - LEFT SIDE */}
+              <div
+                className="flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 items-center justify-center
+                  rounded-xl border-2 border-blue-500/45 bg-gradient-to-br from-blue-500/20 to-blue-600/10
+                  p-2 shadow-lg"
+              >
+                {logoUrl && failedLogoUrl !== logoUrl ? (
+                  <img
+                    key={logoUrl}
+                    src={logoUrl}
+                    alt=""
+                    className="h-full w-full object-cover rounded-lg"
+                    onError={() => setFailedLogoUrl(logoUrl)}
+                  />
+                ) : (
+                  <GraduationCap
+                    aria-hidden="true"
+                    className="h-12 w-12 text-blue-300"
+                  />
+                )}
               </div>
-            )}
 
-            {/* BADGE */}
-            <span
-              className={`
-                inline-flex
-                items-center
-                gap-2
-                px-4
-                py-2
-                rounded-full
-                ${colorClass.bg}/10
-                border
-                ${colorClass.border}/20
-                ${colorClass.text}
-                text-xs
-                font-bold
-                uppercase
-                tracking-[0.15em]
-              `}
-            >
-              {isEducation ? "🎓 Education" : "🏆 Certificate"}
-            </span>
-          </div>
+              {/* INFO - RIGHT SIDE - STACKED VERTICALLY */}
+              <div className="min-w-0 flex-1 flex flex-col justify-center space-y-2">
+                <span
+                  className="inline-flex w-fit rounded-full border border-blue-400/35
+                    bg-blue-500/20 px-2.5 py-1 text-[10px] font-bold
+                    uppercase tracking-wide text-blue-300"
+                >
+                  🎓 Education
+                </span>
 
-          {/* INSTITUTION/ISSUER - PROMINENT */}
-          <p
-            className={`
-              text-xs
-              font-bold
-              ${colorClass.text}
-              mb-1
-              uppercase
-              tracking-[0.2em]
-              opacity-90
-            `}
-          >
-            {experience.institution || experience.field}
-          </p>
+                <h3
+                  className="break-words text-lg sm:text-xl font-bold leading-snug
+                    tracking-tight text-white"
+                >
+                  {experience.degree}
+                </h3>
 
-          {/* DEGREE/CERTIFICATE NAME - BIG & BOLD */}
-          <h3
-            className="
-              text-xl
-              md:text-2xl
-              font-black
-              mb-2
-              tracking-tight
-              text-white
-              line-clamp-2
-              leading-tight
-              group-hover:text-blue-300
-              transition-colors
-              duration-300
-            "
-          >
-            {experience.degree}
-          </h3>
+                {experience.institution && (
+                  <p className="break-words text-sm font-semibold text-blue-300">
+                    {experience.institution}
+                  </p>
+                )}
 
-          {/* FIELD - SECONDARY INFO */}
-          {experience.field && (
-            <p
-              className="
-                text-sm
-                md:text-base
-                text-gray-400
-                mb-2
-                font-semibold
-              "
-            >
-              {isEducation ? "Field: " : "Issued by: "}
-              <span className={colorClass.text}>{experience.field}</span>
-            </p>
-          )}
+                {experience.field && (
+                  <p className="break-words text-sm font-medium text-gray-300">
+                    {experience.field}
+                  </p>
+                )}
 
-          {/* DATE WITH ICON */}
-          <div className="flex items-center gap-3 text-gray-400 mb-3 text-sm">
-            <div
-              className={`
-                w-8
-                h-8
-                rounded-full
-                ${colorClass.bg}/10
-                flex
-                items-center
-                justify-center
-              `}
-            >
-              <Calendar size={16} className={colorClass.text} />
+                {educationDates && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <Calendar size={14} className="text-blue-400 flex-shrink-0" />
+                    <p className="break-words text-sm font-medium text-gray-300">
+                      {educationDates}
+                    </p>
+                  </div>
+                )}
+
+                {experience.description && (
+                  <p className="break-words text-sm leading-relaxed text-gray-300 pt-1 line-clamp-3">
+                    {experience.description}
+                  </p>
+                )}
+              </div>
             </div>
-            <span className="font-semibold">
-              {experience.startYear}
-              {experience.endYear ? ` - ${experience.endYear}` : " - Present"}
-            </span>
-          </div>
+          </article>
+        ) : (
+          <div
+            className="group relative overflow-hidden rounded-xl border border-amber-500/28
+              bg-gradient-to-br from-amber-500/10 to-transparent p-4 sm:p-5
+              shadow-md transition-all duration-300 hover:border-amber-500/50 hover:shadow-lg"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-20 -top-20
+                h-40 w-40 rounded-full bg-amber-500/10 opacity-0
+                blur-[80px] transition-opacity duration-700
+                group-hover:opacity-100"
+            />
 
-          {/* DESCRIPTION */}
-          {experience.description && (
-            <p
-              className="
-                text-sm
-                md:text-base
-                text-gray-400
-                leading-relaxed
-                mb-4
-                line-clamp-3
-              "
-            >
-              {experience.description}
-            </p>
-          )}
+            <div className="relative mb-3">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40
+                  bg-amber-500/18 px-2.5 py-1 text-[10px]
+                  font-bold uppercase tracking-wide text-amber-400"
+              >
+                🏆 Certificate
+              </span>
+            </div>
 
-          {/* CERTIFICATE IMAGES GALLERY - PROMINENT */}
-          {isCertificate &&
-            Array.isArray(experience.certificateImages) &&
-            experience.certificateImages.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">
-                  📸 Certificate Images ({experience.certificateImages.length})
-                </p>
+            {isCertificate && certificateImages.length > 0 && (
+              <div className="relative my-2">
+                <button
+                  type="button"
+                  aria-label="View certificate at full size"
+                  onClick={() => {
+                    setLightboxIndex(0);
+                    setLightboxOpen(true);
+                  }}
+                  className="group/img relative mb-1.5 block aspect-video w-full
+                    overflow-hidden rounded-lg border border-amber-500/30
+                    transition-all duration-300 hover:scale-105
+                    hover:border-amber-500/50 hover:shadow-md"
+                >
+                  <img
+                    src={certificateImages[0]}
+                    alt="Certificate"
+                    className="h-full w-full object-cover transition-all
+                      duration-300 group-hover/img:brightness-110"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 flex items-center justify-center
+                      transition-colors duration-300 group-hover/img:bg-black/15"
+                  >
+                    <ZoomIn
+                      aria-hidden="true"
+                      size={20}
+                      className="text-white opacity-0 transition-opacity
+                        duration-300 group-hover/img:opacity-100"
+                    />
+                  </div>
+                </button>
 
-                {/* GALLERY GRID - LARGER IMAGES */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-3">
-                  {experience.certificateImages.map((imgUrl, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setLightboxIndex(idx);
-                        setLightboxOpen(true);
-                      }}
-                      className="
-                        group/img
-                        relative
-                        rounded-lg
-                        overflow-hidden
-                        aspect-square
-                        border-2
-                        border-amber-500/30
-                        hover:border-amber-500/70
-                        transition-all
-                        duration-300
-                        hover:scale-110
-                        hover:shadow-lg
-                        cursor-pointer
-                      "
-                      title="Click to view full size"
-                    >
-                      <img
-                        src={imgUrl}
-                        alt={`Certificate ${idx + 1}`}
-                        className="w-full h-full object-cover group-hover/img:brightness-125 transition-all duration-300"
-                        onError={(e) => {
-                          e.target.style.display = "none";
+                {certificateImages.length > 1 && (
+                  <div className="flex gap-1 overflow-x-auto pb-1">
+                    {certificateImages.map((imageUrl, imageIndex) => (
+                      <button
+                        key={`${imageUrl}-${imageIndex}`}
+                        type="button"
+                        aria-label={`View certificate image ${imageIndex + 1}`}
+                        onClick={() => {
+                          setLightboxIndex(imageIndex);
+                          setLightboxOpen(true);
                         }}
-                      />
-
-                      <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                        <ZoomIn
-                          size={24}
-                          className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300"
+                        className="h-10 w-10 shrink-0 overflow-hidden rounded-md
+                          border border-amber-500/20 transition-colors
+                          duration-300 hover:border-amber-500/50"
+                      >
+                        <img
+                          src={imageUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
                         />
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                {/* LIGHTBOX */}
                 <CertificateLightbox
-                  images={experience.certificateImages}
+                  images={certificateImages}
                   isOpen={lightboxOpen}
                   onClose={() => setLightboxOpen(false)}
                   initialIndex={lightboxIndex}
@@ -340,53 +250,45 @@ export default function ExperienceCard({
               </div>
             )}
 
-          {/* CREDENTIAL LINK */}
-          {experience.certificateUrl && (
-            <a
-              href={experience.certificateUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={`
-                inline-flex
-                items-center
-                gap-2
-                text-sm
-                font-bold
-                ${colorClass.text}
-                hover:${colorClass.text}/80
-                transition-all
-                duration-300
-                mt-4
-                px-4
-                py-2
-                rounded-lg
-                ${colorClass.bg}/10
-                border
-                ${colorClass.border}/30
-                hover:${colorClass.border}/60
-              `}
-            >
-              <ExternalLink size={16} />
-              View Credential
-            </a>
-          )}
+            {isCertificate && (
+              <div className="relative space-y-1.5">
+                <h3 className="line-clamp-2 text-sm font-bold tracking-tight text-white">
+                  {experience.degree}
+                </h3>
 
-          {/* BOTTOM INDICATOR */}
-          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
-            <span
-              className={`
-                w-2
-                h-2
-                rounded-full
-                ${colorClass.bg}
-                shadow-lg
-              `}
-            />
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-[0.15em]">
-              {isEducation ? "Academic Achievement" : "Professional Certification"}
-            </span>
+                <p className="text-xs font-medium text-amber-300">
+                  {experience.field}
+                </p>
+
+                <p className="text-xs font-medium text-gray-400">
+                  {experience.startYear}
+                </p>
+
+                {experience.description && (
+                  <p className="text-xs leading-snug text-gray-400">
+                    {experience.description}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {isCertificate && experience.certificateUrl && (
+              <a
+                href={experience.certificateUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="relative mt-2 inline-flex items-center gap-1
+                  rounded-md border border-amber-500/25 bg-amber-500/10
+                  px-2 py-1 text-[10px] font-bold text-amber-400
+                  transition-colors duration-300 hover:border-amber-500/50
+                  hover:text-amber-300"
+              >
+                <ExternalLink aria-hidden="true" size={10} />
+                View Credential
+              </a>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

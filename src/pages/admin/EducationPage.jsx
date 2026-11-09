@@ -240,12 +240,13 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          certificateName: formData.degree,  // Map UI degree field to certificateName
-          issuer: formData.field,  // Map UI field to issuer
-          issueDate: formData.startYear ? new Date(formData.startYear) : null,
+          degree: formData.degree,  // Keep degree field name
+          field: formData.field,    // Keep field as issuer
+          startYear: startYearNum || null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description,
+        certificateUrl: formData.certificateUrl,
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
@@ -347,12 +348,13 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          certificateName: formData.degree,  // Map UI degree field to certificateName
-          issuer: formData.field,  // Map UI field to issuer
-          issueDate: formData.startYear ? new Date(formData.startYear) : null,
+          degree: formData.degree,  // Keep degree field name
+          field: formData.field,    // Keep field as issuer
+          startYear: parseInt(formData.startYear, 10) || null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description,
+        certificateUrl: formData.certificateUrl,
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 

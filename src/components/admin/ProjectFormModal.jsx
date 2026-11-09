@@ -34,7 +34,9 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
     status: "completed",
   });
 
-  const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImageUrls, setNewImageUrls] = useState([]);
+  const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -52,7 +54,9 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
         featured: project.featured || false,
         status: project.status || "completed",
       });
-      setImages(project.images || []);
+      setExistingImages((project.images || []).map(url => ({ url })));
+      setNewImageUrls([]);
+      setCoverImage(project.coverImage || project.images?.[0] || '');
       setStep(1);
     } else {
       resetForm();
@@ -73,7 +77,9 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
       featured: false,
       status: "completed",
     });
-    setImages([]);
+    setExistingImages([]);
+    setNewImageUrls([]);
+    setCoverImage('');
     setErrors({});
     setStep(1);
   };
@@ -116,6 +122,15 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
     }));
   };
 
+  const removeExistingImage = (index) => {
+    const removed = existingImages[index];
+    const newList = existingImages.filter((_, i) => i !== index);
+    setExistingImages(newList);
+    if (coverImage === removed.url) {
+      setCoverImage(newList[0]?.url || newImageUrls[0] || '');
+    }
+  };
+
   const handleTechInputKeyPress = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -127,7 +142,8 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = "Title is required";
     if (!formData.description.trim()) newErrors.description = "Description is required";
-    if (images.length === 0) newErrors.images = "At least one image is required";
+    const totalImages = existingImages.length + newImageUrls.length;
+    if (totalImages === 0) newErrors.images = "At least one image is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -160,6 +176,10 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
     try {
       setLoading(true);
 
+      const keptUrls = existingImages.map(img => img.url);
+      const allImages = [...keptUrls, ...newImageUrls];
+      const finalCoverImage = coverImage || allImages[0] || '';
+
       const submitData = {
         title: formData.title,
         slug: formData.slug,
@@ -170,7 +190,8 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
         liveUrl: formData.liveUrl,
         featured: formData.featured,
         status: formData.status,
-        images,
+        images: allImages,
+        coverImage: finalCoverImage,
       };
 
       if (project?._id) {
@@ -290,13 +311,71 @@ export default function ProjectFormModal({ isOpen, onClose, project, onSuccess }
                 </div>
               </div>
 
-              {/* Images */}
+              {/* Existing Images (Edit Mode) */}
+              {project && existingImages.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Current Images
+                  </label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    {existingImages.map((img, index) => (
+                      <div
+                        key={img.url}
+                        className={`relative group aspect-square rounded-lg overflow-hidden bg-white/5 border-2 transition ${
+                          coverImage === img.url
+                            ? 'border-yellow-400'
+                            : 'border-white/10'
+                        }`}
+                      >
+                        <img
+                          src={img.url}
+                          alt={`Existing ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Cover badge */}
+                        {coverImage === img.url && (
+                          <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500 rounded text-[10px] font-bold text-black">
+                            COVER
+                          </div>
+                        )}
+                        {/* Action overlay */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-1.5">
+                          {coverImage !== img.url && (
+                            <button
+                              type="button"
+                              onClick={() => setCoverImage(img.url)}
+                              className="px-2 py-1 bg-yellow-500/80 hover:bg-yellow-500 rounded text-[10px] font-semibold text-black transition"
+                            >
+                              Set Cover
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm('Remove this image from the project?')) {
+                                removeExistingImage(index);
+                              }
+                            }}
+                            className="p-1.5 bg-red-500/80 hover:bg-red-600 rounded text-white transition"
+                            title="Remove image"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Hover to set cover or remove. Gold border = current cover.</p>
+                </div>
+              )}
+
+              {/* Images Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Project Images
+                  {project ? 'Add New Images' : 'Project Images'}
                 </label>
                 <ImageUploader
-                  onImagesUploaded={setImages}
+                  onImagesUploaded={setNewImageUrls}
                   maxImages={8}
                 />
                 {errors.images && <p className="text-red-400 text-sm mt-1">{errors.images}</p>}
