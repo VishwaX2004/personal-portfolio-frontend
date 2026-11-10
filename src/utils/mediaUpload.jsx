@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default async function mediaUpload(file) {
 
@@ -35,38 +35,25 @@ export default async function mediaUpload(file) {
     }
 
     try {
-        console.log("Uploading image:", file.name);
+        console.log("Uploading image via backend:", file.name);
 
         // Create FormData for multipart upload
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append('file', file);
 
-        // Get token from localStorage
-        const token = localStorage.getItem("adminToken");
-
-        // Upload to backend endpoint
+        // Upload to backend which handles Supabase or local storage
         const response = await axios.post(
             `${API_URL}/api/upload/image`,
             formData,
             {
                 headers: {
-                    "Content-Type": "multipart/form-data",
-                    ...(token && { Authorization: `Bearer ${token}` })
+                    'Content-Type': 'multipart/form-data',
                 },
-                timeout: 30000, // 30 second timeout
             }
         );
 
         if (!response.data.success) {
-            throw new Error(
-                response.data.message || "Upload failed"
-            );
-        }
-
-        if (!response.data.publicUrl) {
-            throw new Error(
-                "Could not generate public image URL."
-            );
+            throw new Error(`Upload failed: ${response.data.message}`);
         }
 
         const publicUrl = response.data.publicUrl;

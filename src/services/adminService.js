@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getAdminToken, clearAdminToken } from "../utils/adminAuth";
+import mediaUpload from "../utils/mediaUpload";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -168,87 +169,59 @@ export const deleteAdminEducation = async (id) => {
 };
 
 // ============================================================
-// FILE UPLOADS - Using Supabase
+// FILE UPLOADS - Using mediaUpload utility
 // ============================================================
 
-import {
-  uploadProjectImages,
-  uploadCertificateImages,
-  uploadLogoToSupabase,
-  deleteImageFromSupabase,
-  deleteImagesFromSupabase,
-} from "./supabaseService";
-
-// Upload project images to Supabase
-export const uploadProjectImagesToSupabase = async (files, projectId) => {
+// Upload single logo
+export const uploadLogo = async (file) => {
   try {
-    const result = await uploadProjectImages(files, projectId);
+    const publicUrl = await mediaUpload(file);
     return {
       success: true,
-      uploaded: result.uploaded.map(item => ({
-        publicUrl: item.url,
-      })),
+      publicUrl,
     };
   } catch (error) {
     throw error;
   }
 };
 
-// Upload certificate images to Supabase
-export const uploadCertificateImagesToSupabase = async (files, certificateId) => {
-  try {
-    const result = await uploadCertificateImages(files, certificateId);
-    return {
-      success: true,
-      uploaded: result.uploaded.map(item => ({
-        publicUrl: item.url,
-      })),
-    };
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Upload logo to Supabase
-export const uploadLogo = async (file, institutionId = "default") => {
-  try {
-    const result = await uploadLogoToSupabase(file, institutionId);
-    return result;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Legacy certificate upload (maintained for backward compatibility)
+// Upload single or multiple certification images
 export const uploadCertificationImages = async (files) => {
   try {
-    const result = await uploadCertificateImages(files, "temp");
+    const uploadedUrls = [];
+    
+    for (const file of files) {
+      const publicUrl = await mediaUpload(file);
+      uploadedUrls.push({
+        publicUrl,
+      });
+    }
+    
     return {
       success: true,
-      uploaded: result.uploaded.map(item => ({
-        publicUrl: item.url,
-      })),
+      uploaded: uploadedUrls,
     };
   } catch (error) {
     throw error;
   }
 };
 
-// Delete image from Supabase
-export const deleteImageFromStorage = async (imageUrl) => {
+// Upload single or multiple project images
+export const uploadProjectImages = async (files) => {
   try {
-    await deleteImageFromSupabase(imageUrl);
-    return { success: true };
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Delete multiple images from Supabase
-export const deleteImagesFromStorage = async (imageUrls) => {
-  try {
-    await deleteImagesFromSupabase(imageUrls);
-    return { success: true };
+    const uploadedUrls = [];
+    
+    for (const file of files) {
+      const publicUrl = await mediaUpload(file);
+      uploadedUrls.push({
+        publicUrl,
+      });
+    }
+    
+    return {
+      success: true,
+      uploaded: uploadedUrls,
+    };
   } catch (error) {
     throw error;
   }
