@@ -85,4 +85,13 @@ export const deleteMessage = async (id) => {
   return response.data;
 };
 
+// ============================================================
+// SECTION ORDER HELPERS
+// ============================================================
+
+export const getSectionOrder = async () => {
+  const response = await API.get("/api/section-order");
+  return response.data;
+};
+
 export default API;

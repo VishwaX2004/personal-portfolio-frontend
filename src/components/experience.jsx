@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import API from "../services/api";
 import { getAdminEducation } from "../services/adminService";
+import { getSectionOrder } from "../services/api";
 import CertificateLightbox from "./CertificateLightbox";
 import ExperienceCardNew from "./ExperienceCardNew";
 
@@ -622,6 +623,15 @@ export default function Experience() {
           // Fallback to admin endpoint if public endpoint doesn't exist
           console.log("⚠ /api/qualifications not available, using /api/admin/qualifications");
           educationData = await getAdminEducation();
+        }
+
+        // Sort by globalOrder, then by createdAt
+        if (Array.isArray(educationData)) {
+          educationData = educationData.sort((a, b) => {
+            const orderDiff = (a.globalOrder || 0) - (b.globalOrder || 0);
+            if (orderDiff !== 0) return orderDiff;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          });
         }
 
         setExperiences(educationData || []);

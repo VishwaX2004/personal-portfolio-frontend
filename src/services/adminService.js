@@ -87,6 +87,17 @@ export const deleteAdminProject = async (id) => {
   }
 };
 
+export const reorderProjects = async (projects) => {
+  try {
+    const response = await adminAPI.put(`/api/admin/projects/reorder`, {
+      projects,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // ============================================================
 // QUALIFICATIONS
 // ============================================================
@@ -121,6 +132,17 @@ export const updateAdminQualification = async (id, data) => {
 export const deleteAdminQualification = async (id) => {
   try {
     const response = await adminAPI.delete(`/api/admin/qualifications/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const reorderQualifications = async (qualifications) => {
+  try {
+    const response = await adminAPI.put(`/api/admin/qualifications/reorder`, {
+      qualifications,
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -259,3 +281,48 @@ export const markAsRead = async (id) => {
     throw error;
   }
 };
+
+// ============================================================
+// DISPLAY SETTINGS
+// ============================================================
+
+export const getDisplaySettings = async () => {
+  try {
+    const response = await adminAPI.get("/api/admin/display-settings");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateDisplaySettings = async (settings) => {
+  try {
+    const response = await adminAPI.put("/api/admin/display-settings", settings);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ============================================================
+// SECTION ORDER
+// ============================================================
+
+export const getSectionOrder = async () => {
+  try {
+    const response = await adminAPI.get("/api/admin/section-order");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateSectionOrder = async (order) => {
+  try {
+    const response = await adminAPI.put("/api/admin/section-order", { order });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+

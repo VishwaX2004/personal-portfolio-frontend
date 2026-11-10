@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, ExternalLink, FolderKanban } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Plus, Trash2, Edit2, ExternalLink, FolderKanban, GripVertical } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
   getAdminProjects,
   deleteAdminProject,
+  reorderProjects,
 } from "../../services/adminService";
 import ProjectFormModal from "../../components/admin/ProjectFormModal";
 
@@ -13,6 +14,11 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  
+  // Drag and drop states
+  const dragItem = useRef(null);
+  const [draggedOverId, setDraggedOverId] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -60,6 +66,69 @@ export default function ProjectsPage() {
 
   const handleFormSuccess = () => {
     fetchProjects();
+  };
+
+  // Drag and drop handlers for reordering
+  const handleDragStart = (e, index, itemId) => {
+    dragItem.current = { index, itemId };
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, id) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDraggedOverId(id);
+  };
+
+  const handleDrop = (e, dropIndex, dropId) => {
+    e.preventDefault();
+    setDraggedOverId(null);
+    
+    if (!dragItem.current) return;
+    
+    const { index: dragIndex, itemId: dragId } = dragItem.current;
+    
+    if (dragIndex === dropIndex || dragId === dropId) {
+      dragItem.current = null;
+      return;
+    }
+
+    // Reorder the projects array
+    const updated = [...projects];
+    const [removed] = updated.splice(dragIndex, 1);
+    updated.splice(dropIndex, 0, removed);
+    
+    // Assign new globalOrder values
+    const reorderedItems = updated.map((item, i) => ({
+      ...item,
+      globalOrder: i
+    }));
+    
+    setProjects(reorderedItems);
+    dragItem.current = null;
+  };
+
+  const handleSaveOrder = async () => {
+    try {
+      setReordering(true);
+      
+      // Prepare items array with id and globalOrder
+      const items = projects.map((item, index) => ({
+        id: item._id,
+        globalOrder: index
+      }));
+      
+      await reorderProjects(items);
+      toast.success("Project order saved successfully!");
+      
+      // Refresh data from server
+      await fetchProjects();
+    } catch (error) {
+      console.error("Error saving order:", error);
+      toast.error("Failed to save project order");
+    } finally {
+      setReordering(false);
+    }
   };
 
   if (loading) {
@@ -117,17 +186,33 @@ export default function ProjectsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="grid md:grid-cols-2 xl:grid-cols-3 gap-5"
+          className="space-y-4"
         >
-          {projects.map((project, index) => (
-            <AdminProjectCard
-              key={project._id}
-              project={project}
-              index={index}
-              onEdit={() => handleOpenForm(project)}
-              onDelete={() => handleDeleteProject(project._id)}
-            />
-          ))}
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {projects.map((project, index) => (
+              <AdminProjectCard
+                key={project._id}
+                project={project}
+                index={index}
+                draggedOverId={draggedOverId}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onEdit={() => handleOpenForm(project)}
+                onDelete={() => handleDeleteProject(project._id)}
+              />
+            ))}
+          </div>
+          
+          {projects.length > 0 && (
+            <button
+              onClick={handleSaveOrder}
+              disabled={reordering}
+              className="w-full mt-6 px-6 py-3 bg-[#6c63ff] hover:bg-[#5a52d5] disabled:opacity-50 text-white rounded-lg font-medium transition"
+            >
+              {reordering ? "Saving Order..." : "Save Project Order"}
+            </button>
+          )}
         </motion.div>
       )}
 
@@ -142,9 +227,11 @@ export default function ProjectsPage() {
   );
 }
 
-function AdminProjectCard({ project, index, onEdit, onDelete }) {
+function AdminProjectCard({ project, index, draggedOverId, onDragStart, onDragOver, onDrop, onEdit, onDelete }) {
   const coverImage =
     project.coverImage || project.image || project.images?.[0] || "";
+  
+  const isBeingDraggedOver = draggedOverId === project._id;
 
   const containerVariants = {
     initial: { opacity: 0, y: 20 },
@@ -164,8 +251,27 @@ function AdminProjectCard({ project, index, onEdit, onDelete }) {
       initial="initial"
       animate="animate"
       whileHover={{ y: -4 }}
-      className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden hover:border-[#6c63ff]/40 transition-all"
+      draggable
+      onDragStart={(e) => onDragStart(e, index, project._id)}
+      onDragOver={(e) => onDragOver(e, project._id)}
+      onDrop={(e) => onDrop(e, index, project._id)}
+      onDragEnd={() => {}}
+      style={{
+        opacity: isBeingDraggedOver ? 0.5 : 1,
+        backgroundColor: isBeingDraggedOver ? 'rgba(108, 99, 255, 0.1)' : undefined
+      }}
+      className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden hover:border-[#6c63ff]/40 transition-all relative cursor-move"
     >
+      {/* Order Badge */}
+      <div className="absolute top-2 right-2 z-10 w-8 h-8 bg-[#6c63ff] rounded-full border-2 border-white flex items-center justify-center text-xs text-white font-bold">
+        {index + 1}
+      </div>
+      
+      {/* Drag Handle */}
+      <div className="absolute top-2 left-2 z-10 text-gray-500 pointer-events-none">
+        <GripVertical size={16} />
+      </div>
+
       {/* Image */}
       <div className="aspect-video bg-black overflow-hidden relative">
         {coverImage ? (

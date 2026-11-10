@@ -14,7 +14,13 @@ export default function Projects() {
     const fetchProjects = async () => {
       try {
         const response = await API.get("/api/projects");
-        setProjects(response.data);
+        // Sort by globalOrder, then by createdAt
+        const sortedProjects = (response.data || []).sort((a, b) => {
+          const orderDiff = (a.globalOrder || 0) - (b.globalOrder || 0);
+          if (orderDiff !== 0) return orderDiff;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        setProjects(sortedProjects);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
       }

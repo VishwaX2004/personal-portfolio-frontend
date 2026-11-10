@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, X, GraduationCap, Award, Upload } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Plus, Trash2, Edit2, X, GraduationCap, Award, Upload, GripVertical } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   getAdminQualifications,
@@ -8,6 +8,9 @@ import {
   deleteAdminQualification,
   uploadLogo,
   uploadCertificationImages,
+  getSectionOrder,
+  updateSectionOrder,
+  reorderQualifications,
 } from "../../services/adminService";
 import AdminModal from "../../components/admin/AdminModal";
 
@@ -18,6 +21,15 @@ export default function EducationPage() {
   const [editingEducation, setEditingEducation] = useState(null);
   const [entryType, setEntryType] = useState("education");
   const [uploading, setUploading] = useState(false);
+  
+  // Drag and drop states
+  const dragItem = useRef(null);
+  const [draggedOverId, setDraggedOverId] = useState(null);
+  const [reordering, setReordering] = useState(false);
+  
+  // Section order states
+  const [sectionOrder, setSectionOrder] = useState(['education', 'certificates', 'projects']);
+  const [sectionOrderLoading, setSectionOrderLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     type: "education",
@@ -51,8 +63,24 @@ export default function EducationPage() {
     }
   };
 
+  const fetchSectionOrder = async () => {
+    try {
+      setSectionOrderLoading(true);
+      const data = await getSectionOrder();
+      if (data && data.order) {
+        setSectionOrder(data.order);
+      }
+    } catch (error) {
+      console.error("Error fetching section order:", error);
+      // Use default if fails
+    } finally {
+      setSectionOrderLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchEducation();
+    fetchSectionOrder();
   }, []);
 
   const handleFormChange = (e) => {
@@ -100,6 +128,89 @@ export default function EducationPage() {
     }));
   };
 
+  // Drag and drop handlers for reordering
+  const handleDragStart = (e, index, itemId) => {
+    dragItem.current = { index, itemId };
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, id) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDraggedOverId(id);
+  };
+
+  const handleDrop = (e, dropIndex, dropId) => {
+    e.preventDefault();
+    setDraggedOverId(null);
+    
+    if (!dragItem.current) return;
+    
+    const { index: dragIndex, itemId: dragId } = dragItem.current;
+    
+    if (dragIndex === dropIndex || dragId === dropId) {
+      dragItem.current = null;
+      return;
+    }
+
+    // Reorder the entire education array
+    const updated = [...education];
+    const [removed] = updated.splice(dragIndex, 1);
+    updated.splice(dropIndex, 0, removed);
+    
+    // Assign new globalOrder values
+    const reorderedItems = updated.map((item, i) => ({
+      ...item,
+      globalOrder: i
+    }));
+    
+    setEducation(reorderedItems);
+    dragItem.current = null;
+  };
+
+  const handleSaveOrder = async () => {
+    try {
+      setReordering(true);
+      
+      // Prepare items array with id and globalOrder
+      const items = education.map((item, index) => ({
+        id: item._id,
+        globalOrder: index
+      }));
+      
+      await reorderQualifications(items);
+      toast.success("Order saved successfully!");
+      
+      // Refresh data from server
+      await fetchEducation();
+    } catch (error) {
+      console.error("Error saving order:", error);
+      toast.error("Failed to save order");
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleSaveSectionOrder = async () => {
+    try {
+      setReordering(true);
+      await updateSectionOrder(sectionOrder);
+      toast.success("Section order saved successfully!");
+    } catch (error) {
+      console.error("Error saving section order:", error);
+      toast.error("Failed to save section order");
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleSectionOrderChange = (fromIndex, toIndex) => {
+    const updated = [...sectionOrder];
+    const [removed] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, removed);
+    setSectionOrder(updated);
+  };
+
   const resetForm = () => {
     setFormData({
       type: "education",
@@ -133,19 +244,23 @@ export default function EducationPage() {
   const openEditModal = (item) => {
     setEditingEducation(item);
     setEntryType(item.type || "education");
-    setFormData({
+    
+    // Map database fields back to form fields
+    const formState = {
       type: item.type || "education",
       institution: item.institution || "",
-      degree: item.degree || "",
-      field: item.field || "",
+      degree: item.type === "certificate" ? (item.certificateName || "") : (item.degree || ""),
+      field: item.type === "certificate" ? (item.issuer || "") : (item.field || ""),
       startYear: item.startYear?.toString() || "",
       endYear: item.endYear?.toString() || "",
-      description: item.description || "",
-      certificateUrl: item.certificateUrl || "",
+      description: item.type === "certificate" ? (item.certificateDescription || "") : (item.description || ""),
+      certificateUrl: item.certificateUrl || item.credentialUrl || "",
       order: item.order?.toString() || "",
       logoUrl: item.logoUrl || "",
       certificateImages: item.certificateImages || [],
-    });
+    };
+    
+    setFormData(formState);
     setLogoFile(null);
     setLogoPreviewUrl("");
     setCertificateImageFiles([]);
@@ -161,8 +276,8 @@ export default function EducationPage() {
         return;
       }
     } else {
-      if (!formData.degree) {
-        toast.error("Certificate name is required");
+      if (!formData.degree || !formData.field) {
+        toast.error("Certificate name and issuer are required");
         return;
       }
     }
@@ -249,11 +364,15 @@ export default function EducationPage() {
         ...(entryType === "certificate" && {
           certificateName: formData.degree,  // Map UI degree field to certificateName
           issuer: formData.field,            // Map UI field to issuer
-          issueDate: formData.startYear ? new Date(formData.startYear) : null,
+          startYear: startYearNum || null,
+          endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
+          certificateDescription: formData.description || "",
+          credentialUrl: formData.certificateUrl || "",
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
-        description: formData.description || "",
-        certificateUrl: formData.certificateUrl || "",
+        ...(entryType === "education" && {
+          educationDescription: formData.description || "",
+        }),
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
@@ -280,8 +399,8 @@ export default function EducationPage() {
         return;
       }
     } else {
-      if (!formData.degree) {
-        toast.error("Certificate name is required");
+      if (!formData.degree || !formData.field) {
+        toast.error("Certificate name and issuer are required");
         return;
       }
     }
@@ -357,11 +476,15 @@ export default function EducationPage() {
         ...(entryType === "certificate" && {
           certificateName: formData.degree,  // Map UI degree field to certificateName
           issuer: formData.field,            // Map UI field to issuer
-          issueDate: formData.startYear ? new Date(formData.startYear) : null,
+          startYear: parseInt(formData.startYear, 10) || null,
+          endYear: formData.endYear ? parseInt(formData.endYear, 10) : null,
+          certificateDescription: formData.description || "",
+          credentialUrl: formData.certificateUrl || "",
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
-        description: formData.description || "",
-        certificateUrl: formData.certificateUrl || "",
+        ...(entryType === "education" && {
+          educationDescription: formData.description || "",
+        }),
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
@@ -538,12 +661,24 @@ export default function EducationPage() {
                 <EducationCard
                   key={item._id}
                   item={item}
-                  isFirst={index === 0}
-                  isLast={index === educationList.length - 1}
+                  index={index}
+                  draggedOverId={draggedOverId}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                   onEdit={openEditModal}
                   onDelete={handleDeleteEducation}
                 />
               ))}
+              {educationList.length > 0 && (
+                <button
+                  onClick={handleSaveOrder}
+                  disabled={reordering}
+                  className="w-full mt-4 px-4 py-2 bg-[#6c63ff] hover:bg-[#5a52d5] disabled:opacity-50 text-white rounded-lg font-medium transition"
+                >
+                  {reordering ? "Saving Order..." : "Save Education Order"}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -568,15 +703,67 @@ export default function EducationPage() {
                 <CertificateCard
                   key={item._id}
                   item={item}
-                  isFirst={index === 0}
-                  isLast={index === certificateList.length - 1}
+                  index={index}
+                  draggedOverId={draggedOverId}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                   onEdit={openEditModal}
                   onDelete={handleDeleteEducation}
                 />
               ))}
+              {certificateList.length > 0 && (
+                <button
+                  onClick={handleSaveOrder}
+                  disabled={reordering}
+                  className="w-full mt-4 px-4 py-2 bg-[#6c63ff] hover:bg-[#5a52d5] disabled:opacity-50 text-white rounded-lg font-medium transition"
+                >
+                  {reordering ? "Saving Order..." : "Save Certificate Order"}
+                </button>
+              )}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Section Order Control */}
+      <div className="mt-12 bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+        <h3 className="text-xl font-semibold mb-6">Display Order</h3>
+        <p className="text-gray-400 text-sm mb-4">Drag to reorder which sections appear first on your portfolio</p>
+        
+        <div className="flex gap-4 justify-center mb-6">
+          {sectionOrder.map((section, idx) => (
+            <div
+              key={section}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                dragItem.current = { type: 'section', index: idx };
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragItem.current?.type === 'section') {
+                  handleSectionOrderChange(dragItem.current.index, idx);
+                }
+              }}
+              className="flex-1 px-4 py-3 bg-[#6c63ff]/20 border-2 border-[#6c63ff] rounded-lg text-center cursor-move hover:bg-[#6c63ff]/30 transition capitalize font-medium"
+            >
+              {section}
+            </div>
+          ))}
+        </div>
+        
+        <button
+          onClick={handleSaveSectionOrder}
+          disabled={reordering}
+          className="w-full px-6 py-3 bg-[#6c63ff] hover:bg-[#5a52d5] disabled:opacity-50 text-white rounded-lg font-medium transition"
+        >
+          {reordering ? "Saving..." : "Save Section Order"}
+        </button>
       </div>
 
       {/* Edit Modal */}
@@ -641,13 +828,30 @@ export default function EducationPage() {
   );
 }
 
-function EducationCard({ item, isFirst, isLast, onEdit, onDelete }) {
+function EducationCard({ item, index, draggedOverId, onDragStart, onDragOver, onDrop, onEdit, onDelete }) {
+  const isBeingDraggedOver = draggedOverId === item._id;
+  
   return (
-    <div className="relative">
-      {!isLast && <div className="absolute left-5 top-16 w-0.5 h-12 bg-gradient-to-b from-[#6c63ff] to-transparent" />}
-
+    <div 
+      className="relative"
+      draggable
+      onDragStart={(e) => onDragStart(e, index, item._id)}
+      onDragOver={(e) => onDragOver(e, item._id)}
+      onDrop={(e) => onDrop(e, index, item._id)}
+      onDragEnd={() => {}}
+      style={{
+        opacity: isBeingDraggedOver ? 0.5 : 1,
+        backgroundColor: isBeingDraggedOver ? 'rgba(108, 99, 255, 0.1)' : 'transparent'
+      }}
+    >
       <div className="border border-white/10 rounded-lg p-4 bg-white/[0.02] hover:bg-white/[0.05] transition relative pl-12">
-        <div className="absolute left-2 top-4 w-6 h-6 bg-[#6c63ff] rounded-full border-2 border-[#1a1a2e]" />
+        <div className="absolute left-2 top-4 w-6 h-6 bg-[#6c63ff] rounded-full border-2 border-[#1a1a2e] flex items-center justify-center text-xs text-white font-bold">
+          {index + 1}
+        </div>
+        
+        <div className="absolute left-10 top-4 text-gray-500 cursor-move hover:text-gray-300">
+          <GripVertical size={16} />
+        </div>
 
         <div className="space-y-2">
           {item.logoUrl && (
@@ -687,19 +891,38 @@ function EducationCard({ item, isFirst, isLast, onEdit, onDelete }) {
   );
 }
 
-function CertificateCard({ item, isFirst, isLast, onEdit, onDelete }) {
+function CertificateCard({ item, index, draggedOverId, onDragStart, onDragOver, onDrop, onEdit, onDelete }) {
+  const isBeingDraggedOver = draggedOverId === item._id;
+  
   return (
-    <div className="relative">
-      {!isLast && <div className="absolute left-5 top-16 w-0.5 h-12 bg-gradient-to-b from-orange-400 to-transparent" />}
-
+    <div 
+      className="relative"
+      draggable
+      onDragStart={(e) => onDragStart(e, index, item._id)}
+      onDragOver={(e) => onDragOver(e, item._id)}
+      onDrop={(e) => onDrop(e, index, item._id)}
+      onDragEnd={() => {}}
+      style={{
+        opacity: isBeingDraggedOver ? 0.5 : 1,
+        backgroundColor: isBeingDraggedOver ? 'rgba(251, 146, 60, 0.1)' : 'transparent'
+      }}
+    >
       <div className="border border-white/10 rounded-lg p-4 bg-white/[0.02] hover:bg-white/[0.05] transition relative pl-12">
-        <div className="absolute left-2 top-4 w-6 h-6 bg-orange-400 rounded-full border-2 border-[#1a1a2e]" />
+        <div className="absolute left-2 top-4 w-6 h-6 bg-orange-400 rounded-full border-2 border-[#1a1a2e] flex items-center justify-center text-xs text-white font-bold">
+          {index + 1}
+        </div>
+        
+        <div className="absolute left-10 top-4 text-gray-500 cursor-move hover:text-gray-300">
+          <GripVertical size={16} />
+        </div>
 
         <div className="space-y-2">
-          <h4 className="font-semibold text-white">{item.degree}</h4>
-          <p className="text-sm text-gray-400">{item.field}</p>
-          <p className="text-xs text-gray-500">{item.startYear || "Date not specified"}</p>
-          {item.description && <p className="text-sm text-gray-400 mt-2">{item.description}</p>}
+          <h4 className="font-semibold text-white">{item.certificateName || item.degree}</h4>
+          <p className="text-sm text-gray-400">{item.issuer || item.field}</p>
+          <p className="text-xs text-gray-500">
+            {item.issueDate ? new Date(item.issueDate).getFullYear() : item.startYear || "Date not specified"}
+          </p>
+          {(item.certificateDescription || item.description) && <p className="text-sm text-gray-400 mt-2">{item.certificateDescription || item.description}</p>}
           
           {item.certificateImages && item.certificateImages.length > 0 && (
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -714,9 +937,9 @@ function CertificateCard({ item, isFirst, isLast, onEdit, onDelete }) {
             </div>
           )}
           
-          {item.certificateUrl && (
+          {(item.certificateUrl || item.credentialUrl) && (
             <a
-              href={item.certificateUrl}
+              href={item.certificateUrl || item.credentialUrl}
               target="_blank"
               rel="noreferrer"
               className="text-xs text-[#6c63ff] hover:underline block mt-2"
