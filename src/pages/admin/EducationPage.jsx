@@ -247,9 +247,9 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          degree: formData.degree,  // Keep degree field name
-          field: formData.field,    // Keep field as issuer
-          startYear: startYearNum || null,
+          certificateName: formData.degree,  // Map UI degree field to certificateName
+          issuer: formData.field,            // Map UI field to issuer
+          issueDate: formData.startYear ? new Date(formData.startYear) : null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description || "",
@@ -355,9 +355,9 @@ export default function EducationPage() {
           ...(logoUrl && { logoUrl }),
         }),
         ...(entryType === "certificate" && {
-          degree: formData.degree,  // Keep degree field name
-          field: formData.field,    // Keep field as issuer
-          startYear: parseInt(formData.startYear, 10) || null,
+          certificateName: formData.degree,  // Map UI degree field to certificateName
+          issuer: formData.field,            // Map UI field to issuer
+          issueDate: formData.startYear ? new Date(formData.startYear) : null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
         description: formData.description || "",
