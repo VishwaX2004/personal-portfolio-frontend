@@ -70,7 +70,7 @@ export default function Projects() {
           </Link>
         </motion.div>
 
-        {/* Projects Grid - 3 columns with masonry effect */}
+        {/* Projects Grid - All same size */}
         {projects.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -86,21 +86,14 @@ export default function Projects() {
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 auto-rows-max"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {projects.slice(0, 6).map((project, index) => (
-              <div
-                key={project._id}
-                className={`
-                  ${index === 0 ? "sm:col-span-2 lg:col-span-1 lg:row-span-2" : ""}
-                  ${index === 1 ? "sm:col-span-1 lg:col-span-1" : ""}
-                `}
-              >
+              <div key={project._id}>
                 <ProjectCard
                   project={project}
                   onSelectProject={setSelectedProject}
                   index={index}
-                  isLarge={index === 0}
                 />
               </div>
             ))}
