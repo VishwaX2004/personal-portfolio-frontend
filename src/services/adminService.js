@@ -1,6 +1,5 @@
 import axios from "axios";
 import { getAdminToken, clearAdminToken } from "../utils/adminAuth";
-import mediaUpload from "../utils/mediaUpload";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -169,12 +168,13 @@ export const deleteAdminEducation = async (id) => {
 };
 
 // ============================================================
-// FILE UPLOADS - Using mediaUpload utility
+// FILE UPLOADS - Using mediaUpload utility (Supabase)
 // ============================================================
 
 // Upload single logo
 export const uploadLogo = async (file) => {
   try {
+    const mediaUpload = (await import("../utils/mediaUpload")).default;
     const publicUrl = await mediaUpload(file);
     return {
       success: true,
@@ -185,9 +185,10 @@ export const uploadLogo = async (file) => {
   }
 };
 
-// Upload single or multiple certification images
+// Upload certification images
 export const uploadCertificationImages = async (files) => {
   try {
+    const mediaUpload = (await import("../utils/mediaUpload")).default;
     const uploadedUrls = [];
     
     for (const file of files) {
@@ -206,9 +207,10 @@ export const uploadCertificationImages = async (files) => {
   }
 };
 
-// Upload single or multiple project images
+// Upload project images
 export const uploadProjectImages = async (files) => {
   try {
+    const mediaUpload = (await import("../utils/mediaUpload")).default;
     const uploadedUrls = [];
     
     for (const file of files) {

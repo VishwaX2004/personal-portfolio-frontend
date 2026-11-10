@@ -1,9 +1,51 @@
-import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const BUCKET_NAME = "portfolio-images";
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+const ALLOWED_FILE_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+];
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+
+if (!supabaseUrl) {
+    throw new Error("VITE_SUPABASE_URL is missing from the frontend environment.");
+}
+
+if (!supabaseKey) {
+    throw new Error(
+        "VITE_SUPABASE_ANON_KEY is missing from the frontend environment."
+    );
+}
+
+let projectUrl;
+
+try {
+    projectUrl = new URL(supabaseUrl);
+} catch {
+    throw new Error(
+        "VITE_SUPABASE_URL is invalid. Copy the Project URL from Supabase."
+    );
+}
+
+if (!["https:", "http:"].includes(projectUrl.protocol)) {
+    throw new Error("VITE_SUPABASE_URL must start with https:// or http://.");
+}
+
+const supabase = createClient(supabaseUrl.replace(/\/+$/, ""), supabaseKey);
+
+function createFilePath(file) {
+    const cleanFileName = file.name.trim().replace(/[^a-zA-Z0-9.-]/g, "_");
+    const randomSuffix = Math.random().toString(36).slice(2, 10);
+
+    return `portfolio/${Date.now()}-${randomSuffix}-${cleanFileName}`;
+}
 
 export default async function mediaUpload(file) {
-
     if (!file) {
         throw new Error("Please select an image first.");
     }
@@ -12,66 +54,59 @@ export default async function mediaUpload(file) {
         throw new Error("Invalid image file.");
     }
 
-    // Only allow images
-    const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-        throw new Error(
-            "Only JPG, PNG and WEBP images are allowed."
-        );
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        throw new Error("Only JPG, PNG and WebP images are allowed.");
     }
 
-    // 10 MB maximum
-    const maxSize = 10 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-        throw new Error(
-            "Image size must be less than 10 MB."
-        );
+    if (file.size > MAX_FILE_SIZE) {
+        throw new Error("Image size must be 10 MB or less.");
     }
+
+    const bucket = supabase.storage.from(BUCKET_NAME);
+    const filePath = createFilePath(file);
 
     try {
-        console.log("Uploading image via backend:", file.name);
+        const { data, error } = await bucket.upload(filePath, file, {
+            cacheControl: "3600",
+            contentType: file.type,
+            upsert: false,
+        });
 
-        // Create FormData for multipart upload
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // Upload to backend which handles Supabase or local storage
-        const response = await axios.post(
-            `${API_URL}/api/upload/image`,
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            }
-        );
-
-        if (!response.data.success) {
-            throw new Error(`Upload failed: ${response.data.message}`);
+        if (error) {
+            throw error;
         }
 
-        const publicUrl = response.data.publicUrl;
+        if (!data?.path) {
+            throw new Error("Supabase did not return the uploaded file path.");
+        }
 
-        console.log(
-            "Public image URL:",
-            publicUrl
-        );
+        const { data: publicUrlData } = bucket.getPublicUrl(data.path);
+        const publicUrl = publicUrlData?.publicUrl;
+
+        if (!publicUrl) {
+            throw new Error("Supabase did not return a public image URL.");
+        }
 
         return publicUrl;
-
     } catch (error) {
+        const message = error?.message || "Supabase image upload failed.";
+        const status = error?.statusCode ?? error?.status;
 
-        console.error(
-            "mediaUpload error:",
-            error.message
-        );
+        console.error("Supabase image upload failed", {
+            hostname: projectUrl.hostname,
+            bucket: BUCKET_NAME,
+            path: filePath,
+            status,
+            error,
+        });
 
-        throw error;
+        if (/failed to fetch|networkerror|network request failed|load failed/i.test(message)) {
+            throw new Error(
+                `Could not reach ${projectUrl.hostname}. Check the Supabase Project URL, project status, and your network.`,
+                { cause: error }
+            );
+        }
+
+        throw new Error(message, { cause: error });
     }
 }
