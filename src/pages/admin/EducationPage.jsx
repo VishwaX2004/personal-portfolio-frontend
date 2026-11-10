@@ -93,6 +93,13 @@ export default function EducationPage() {
     }));
   };
 
+  const removeExistingLogo = () => {
+    setFormData(prev => ({
+      ...prev,
+      logoUrl: ""
+    }));
+  };
+
   const resetForm = () => {
     setFormData({
       type: "education",
@@ -245,8 +252,8 @@ export default function EducationPage() {
           startYear: startYearNum || null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
-        description: formData.description,
-        certificateUrl: formData.certificateUrl,
+        description: formData.description || "",
+        certificateUrl: formData.certificateUrl || "",
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
@@ -353,8 +360,8 @@ export default function EducationPage() {
           startYear: parseInt(formData.startYear, 10) || null,
           ...(certificateImages.length > 0 && { certificateImages }),
         }),
-        description: formData.description,
-        certificateUrl: formData.certificateUrl,
+        description: formData.description || "",
+        certificateUrl: formData.certificateUrl || "",
         order: formData.order ? parseInt(formData.order, 10) : 0,
       };
 
@@ -478,6 +485,12 @@ export default function EducationPage() {
                   setLogoFile(null);
                   setLogoPreviewUrl("");
                 }}
+                onRemoveExistingLogo={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    logoUrl: ""
+                  }));
+                }}
               />
             ) : (
               <CertificateFormFields 
@@ -587,6 +600,7 @@ export default function EducationPage() {
                 setLogoFile(null);
                 setLogoPreviewUrl("");
               }}
+              onRemoveExistingLogo={removeExistingLogo}
               existingLogoUrl={editingEducation?.logoUrl}
             />
           ) : (
@@ -731,7 +745,7 @@ function CertificateCard({ item, isFirst, isLast, onEdit, onDelete }) {
   );
 }
 
-function EducationFormFields({ form, onChange, logoFile, logoPreviewUrl, onLogoChange, onRemoveLogo, existingLogoUrl }) {
+function EducationFormFields({ form, onChange, logoFile, logoPreviewUrl, onLogoChange, onRemoveLogo, onRemoveExistingLogo, existingLogoUrl }) {
   return (
     <div className="grid md:grid-cols-2 gap-4 space-y-4 md:space-y-0">
       <Input
@@ -807,7 +821,13 @@ function EducationFormFields({ form, onChange, logoFile, logoPreviewUrl, onLogoC
             />
             <button
               type="button"
-              onClick={onRemoveLogo}
+              onClick={() => {
+                if (logoPreviewUrl) {
+                  onRemoveLogo();
+                } else if (existingLogoUrl && onRemoveExistingLogo) {
+                  onRemoveExistingLogo();
+                }
+              }}
               className="px-3 py-1.5 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition"
             >
               Remove
