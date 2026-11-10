@@ -8,6 +8,7 @@ import ProjectDetailsModal from "./ProjectDetailsModal";
 export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -22,12 +23,32 @@ export default function Projects() {
     fetchProjects();
   }, []);
 
+  // Track scroll to trigger animations
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user has scrolled down to projects section
+      const projectsSection = document.getElementById("projects");
+      if (projectsSection) {
+        const rect = projectsSection.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight * 0.8;
+        
+        if (isInView && !hasScrolled) {
+          setHasScrolled(true);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasScrolled]);
+
   const containerVariants = {
     initial: { opacity: 0 },
     animate: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
       },
     },
   };
@@ -84,7 +105,7 @@ export default function Projects() {
           <motion.div
             variants={containerVariants}
             initial="initial"
-            whileInView="animate"
+            animate={hasScrolled ? "animate" : "initial"}
             viewport={{ once: true }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
@@ -94,6 +115,7 @@ export default function Projects() {
                   project={project}
                   onSelectProject={setSelectedProject}
                   index={index}
+                  hasScrolled={hasScrolled}
                 />
               </div>
             ))}

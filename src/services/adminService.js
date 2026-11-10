@@ -250,3 +250,12 @@ export const deleteMessage = async (id) => {
     throw error;
   }
 };
+
+export const markAsRead = async (id) => {
+  try {
+    const response = await adminAPI.put(`/api/admin/messages/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

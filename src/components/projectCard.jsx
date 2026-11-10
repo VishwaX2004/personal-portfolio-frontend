@@ -1,20 +1,24 @@
 import { ExternalLink, Code2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function ProjectCard({ project, onSelectProject, index = 0 }) {
+export default function ProjectCard({ project, onSelectProject, index = 0, hasScrolled = false }) {
   // Use coverImage if available, otherwise fall back to image, then to first image in array
   const coverImage =
     project.coverImage || project.image || project.images?.[0] || "";
 
   const containerVariants = {
-    initial: { opacity: 0, y: 30 },
+    initial: { opacity: 0, y: 30, scale: 0.9 },
     animate: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.5,
+        duration: 0.6,
         delay: index * 0.12,
-        ease: "easeOut",
+        ease: "backOut",
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
       },
     },
     hover: {
@@ -49,7 +53,7 @@ export default function ProjectCard({ project, onSelectProject, index = 0 }) {
     <motion.div
       variants={containerVariants}
       initial="initial"
-      animate="animate"
+      animate={hasScrolled ? "animate" : "initial"}
       whileHover="hover"
       onClick={handleClick}
       className="group relative h-full cursor-pointer overflow-hidden rounded-2xl"
