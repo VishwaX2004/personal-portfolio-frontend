@@ -253,20 +253,20 @@ export default function ExperienceCard({
             {isCertificate && (
               <div className="relative space-y-1.5">
                 <h3 className="line-clamp-2 text-sm font-bold tracking-tight text-white">
-                  {experience.degree}
+                  {experience.certificateName}
                 </h3>
 
                 <p className="text-xs font-medium text-amber-300">
-                  {experience.field}
+                  {experience.issuer}
                 </p>
 
                 <p className="text-xs font-medium text-gray-400">
-                  {experience.startYear}
+                  {experience.issueDate ? new Date(experience.issueDate).getFullYear() : experience.startYear}
                 </p>
 
-                {experience.description && (
+                {experience.certificateDescription && (
                   <p className="text-xs leading-snug text-gray-400">
-                    {experience.description}
+                    {experience.certificateDescription}
                   </p>
                 )}
               </div>

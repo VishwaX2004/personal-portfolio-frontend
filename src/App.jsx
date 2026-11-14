@@ -14,6 +14,7 @@ import DashboardPage from "./pages/admin/DashboardPage";
 import ProjectsPage from "./pages/admin/ProjectsPage";
 import EducationPage from "./pages/admin/EducationPage";
 import MessagesPage from "./pages/admin/MessagesPage";
+import OrderManagementPage from "./pages/admin/OrderManagementPage";
 
 function App() {
   return (
@@ -108,6 +109,11 @@ function App() {
               <Route
                 path="messages"
                 element={<MessagesPage />}
+              />
+
+              <Route
+                path="order"
+                element={<OrderManagementPage />}
               />
 
             </Route>

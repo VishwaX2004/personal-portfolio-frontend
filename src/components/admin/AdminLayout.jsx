@@ -49,6 +49,10 @@ export default function AdminLayout() {
       return "messages";
     }
 
+    if (path === "/admin/order") {
+      return "order";
+    }
+
     return "dashboard";
   };
 
@@ -68,6 +72,8 @@ export default function AdminLayout() {
         return "Education";
       case "messages":
         return "Messages";
+      case "order":
+        return "Display Order";
       default:
         return "Dashboard";
     }
@@ -148,6 +154,22 @@ export default function AdminLayout() {
           >
             <MessageSquare size={18} />
             Messages
+          </Link>
+
+          {/* Display Order */}
+
+          <Link
+            to="/admin/order"
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition ${
+              activeTab === "order"
+                ? "bg-blue-600"
+                : "text-gray-400 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12h18M3 6h18M3 18h18M7 4v4M7 12v4M7 16v4" />
+            </svg>
+            Display Order
           </Link>
         </nav>
 
